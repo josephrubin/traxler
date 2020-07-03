@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Student | Stalk.page</title>
+
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="icon" type="image/png" href="https://www.stalk.page/favicon.png">
+
+        <link rel="stylesheet" href="css/main.css" />
+
+        <!-- Custom fonts. -->
+        <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet"> 
+        
+        <!-- React JS scripts. Remember to switch these to the min versions for production. -->
+        <script crossorigin src="https://unpkg.com/react@16.13.1/umd/react.development.js"></script>
+        <script crossorigin src="https://unpkg.com/react-dom@16.13.1/umd/react-dom.development.js"></script>
+        
+        <!-- Babel will transpile JSX for us (among other things) client side. This is technically
+        a slow way to do it, but it frees us from the Node ecosystem. -->
+        <script crossorigin src="https://unpkg.com/@babel/standalone@7.9.5/babel.min.js"></script>
+    </head>
+    <body>
+        <div id="root"></div>
+
+        <!-- Use a babel type for client side transpilation. -->
+        <script type="text/babel" src="js/search.js"></script>
+    </body>
+</html>
