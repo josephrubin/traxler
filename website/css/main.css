@@ -261,8 +261,6 @@ span.alongside_icon_small, a.alongside_icon_small {
 }
 
 .search_bar {
-    margin-bottom: 26px;
-    margin-bottom: 26px;
     height: 46px;
     background-color: white;
     top: 25px;
@@ -313,6 +311,10 @@ input[type=submit] {
     padding: 18px;
     padding-right: 16px;
     background-color: aqua;
+}
+
+.search_result.search_page {
+    border-top: 1px solid #C7C7C7;
 }
 
 a.search_page {

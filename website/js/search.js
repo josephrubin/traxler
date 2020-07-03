@@ -12,7 +12,7 @@ class SearchResult extends React.Component {
   render() {
     return (
       <a className="search_page" href={this.props.click}>
-        <div className="search_result" style={{backgroundColor: this.props.color}}>
+        <div className="search_result search_page" style={{backgroundColor: this.props.color}}>
           {this.props.children}
         </div>
       </a>
@@ -112,7 +112,6 @@ class App extends React.Component {
 
       return (
         <div key={student.netId}>
-          <div className="rule"></div>
           <SearchResult color={color} click={"student.html?!=" + student.netId + "&token=" + urlParams.get("token")}>
             <div className="peacemaker search_page">
               <h1 className="search_page">{student.name}<span style={{color: "#C7C7C7"}}> '{student.year}</span></h1>
