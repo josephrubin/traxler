@@ -4,7 +4,7 @@ const urlParams = new URLSearchParams(window.location.search);
 
 class Frame extends React.Component {
   render() {
-    return <div className="frame search_page">{this.props.children}</div>
+    return <div className="frame index_page">{this.props.children}</div>
   }
 }
 

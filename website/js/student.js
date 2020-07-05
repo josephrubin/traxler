@@ -44,7 +44,7 @@ function navigatorClip(e) {
 
 function navigatorBack(e, goHome) {
   if (goHome) {
-    window.location.href = "https://stalk.page/";
+    window.location.href = "/";
   }
   else {
     window.history.back()
@@ -190,7 +190,6 @@ class App extends React.Component {
           }
 
           document.body.style.backgroundColor = color;
-          document.body.style.overflow = "hidden";
 
           if (res.student.study == "Woodrow Wilson School") {
             res.student.study = "Public and International Affairs"

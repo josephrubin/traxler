@@ -8,7 +8,9 @@
 
 .frame {
     padding-top: 18px;
-    border-radius: 0px 0px 23px 23px;
+}
+
+.frame.index_page {
     overflow: hidden;
 }
 
@@ -19,55 +21,40 @@
 }
 
 @media only screen and (min-width: 600px) {
-  .frame.student_page, .frame.index_page {
+  .frame.student_page {
     padding-left: 75px;
     padding-right: 75px;
   }
 }
 
 @media only screen and (min-width: 800px) {
-  .frame.student_page, .frame.index_page {
+  /* Add scrollbars to every page for consistent horizontal position. */
+  body {
+    overflow-y: scroll;
+  }
+
+  .frame.student_page {
     padding-left: 18px;
     padding-right: 18px;
     background-color: white !important;
   }
 
   .frame {
-    margin-left: 150px;
-    margin-right: 150px;
+    margin: auto;
+    width: 672px;
     box-shadow: 0px 1px 3.5px 0.1px #c7c7c7;
     margin-bottom: 25px;
+    border-radius: 0px 0px 23px 23px;
+  }
+
+  .frame.student_page {
+    width: 636px;
   }
 
   img.student_page.portrait {
     border-radius: 0px !important;
     box-shadow: 0px 0px 0px !important;
     border: 1px solid #E5E5E5;
-  }
-}
-
-@media only screen and (min-width: 1000px) {
-  .frame {
-    margin-left: 225px;
-    margin-right: 225px;
-    box-shadow: 0px 1px 3.5px 0.1px #c7c7c7;
-    margin-bottom: 25px;
-  }
-}
-
-@media only screen and (min-width: 1200px) {
-  .frame {
-    margin-left: 375px;
-    margin-right: 375px;
-    box-shadow: 0px 1px 3.5px 0.1px #c7c7c7;
-  }
-}
-
-@media only screen and (min-width: 1400px) {
-  .frame {
-    margin-left: 450px;
-    margin-right: 450px;
-    box-shadow: 0px 1px 3.5px 0.1px #c7c7c7;
   }
 }
 
@@ -114,7 +101,6 @@ img.student_page.portrait {
     overflow: hidden;
     transform: translateX(-50%);
     border-radius: 23px;
-    overflow: hidden;
     box-shadow: 0px 1px 3.5px 0.1px #C7C7C7;
 }
 
@@ -375,4 +361,8 @@ a {
     user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
+}
+
+.rb {
+    border-radius: 0px 0px 23px 23px;
 }

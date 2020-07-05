@@ -19,7 +19,7 @@ class SearchResult extends React.Component {
   render() {
     return (
       <a className="search_page" onClick={(e) => navigateStudent(e, this.props.click)}>
-        <div className="search_result search_page" style={{backgroundColor: this.props.color}}>
+        <div className={"search_result search_page " + this.props.extraClasses} style={{backgroundColor: this.props.color}}>
           {this.props.children}
         </div>
       </a>
@@ -170,7 +170,8 @@ class App extends React.Component {
   }
 
   render() {
-    let results = this.state.students.map(function(student) {
+    var stateSave = this.state;
+    let results = this.state.students.map(function(student, idx) {
       var color = "#ffffff"
       switch (Number(student.year)) {
         case 21:
@@ -191,10 +192,15 @@ class App extends React.Component {
         student.study = "Public and International Affairs"
       }
 
+      var extraClasses = "";
+      if (idx == stateSave.students.length - 1){
+        extraClasses = "rb"
+      }
+
       return (
-        <div key={student.netId}>
-          <SearchResult color={color} click={"student.html?!=" + student.netId + "&token=" + urlParams.get("token")}>
-            <div className="peacemaker search_page">
+        <div key={student.netId} className={extraClasses}>
+          <SearchResult extraClasses={extraClasses} color={color} click={"student.html?!=" + student.netId + "&token=" + urlParams.get("token")}>
+            <div className={"peacemaker search_page"}>
               <h1 className="search_page">{student.name}<span style={{color: "#C7C7C7"}}> '{student.year}</span></h1>
               <Portrait src={"https://www.stalk.page/small/" + student.image} />
             </div>
