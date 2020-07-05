@@ -3,10 +3,9 @@
 const urlParams = new URLSearchParams(window.location.search);
 const storage = window.localStorage;
 
-function navigateStudent(e, url) {
+function saveScroll(url) {
   scroll = document.documentElement.scrollTop;
   storage.setItem("lastScroll", scroll);
-  window.location.href = url;
 }
 
 class Frame extends React.Component {
@@ -18,7 +17,8 @@ class Frame extends React.Component {
 class SearchResult extends React.Component {
   render() {
     return (
-      <a className="search_page" onClick={(e) => navigateStudent(e, this.props.click)}>
+      /* We use href to allow middle click (open-in-new-tab) behavior. */
+      <a className="search_page" onClick={saveScroll} href={this.props.click}>
         <div className={"search_result search_page " + this.props.extraClasses} style={{backgroundColor: this.props.color}}>
           {this.props.children}
         </div>
@@ -77,7 +77,8 @@ class App extends React.Component {
     this.state = {
       students: [],
       slowCompleted: false,
-      result_count_text: "Loading..."
+      result_count_text: "Loading...",
+      show_home_link: false
     }
   }
 
@@ -103,7 +104,7 @@ class App extends React.Component {
         this.setState(lastState);
 
         // Restore the last scroll (not needed for Firefox, but needed for Chrome).
-        setTimeout(function() {document.documentElement.scrollTop = storage.getItem('lastScroll')}, 10)
+        setTimeout(function() {document.documentElement.scrollTop = storage.getItem('lastScroll')}, 5)
         return;
       }
     }
@@ -156,6 +157,7 @@ class App extends React.Component {
           result_count_text: res.students.length +
             (res.students.length == 1 ? " Result" : " Results") +
             (res.too_many_tokens ? " | Only the first four search terms are considered" : ""),
+          show_home_link: true,
           error: false
         });
         storage.setItem("lastState", JSON.stringify(this.state))
@@ -213,11 +215,18 @@ class App extends React.Component {
 
     if (this.state.isLoaded && this.state.error) {
       results = (
-        <SearchResult color={"white"} click={"javvascript:return false;"}>
+        <SearchResult extraClasses={"rb"} color={"white"} click={"javvascript:return false;"}>
           <h2>We're Sorry</h2>
           <br />
           <span>The server encounter an error. Please try refreshing the page. We apologize for the inconvenience.</span>
         </SearchResult>
+      )
+    }
+
+    var homeLink = ""
+    if (this.state.show_home_link) {
+      homeLink = (
+        <a href={"/"} className="home_link fr">Return home</a>
       )
     }
 
@@ -226,7 +235,10 @@ class App extends React.Component {
         <div style={{paddingLeft: "18px", paddingRight: "18px"}}>
           <SearchBar fill={this.state.q} />
         </div>
-        <div className="result_count">{this.state.result_count_text}</div>
+        <div className="preacemaker search_page header">
+          <div className="result_count">{this.state.result_count_text}</div>
+          {homeLink}
+        </div>
         {results}
       </Frame>
     )

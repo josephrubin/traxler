@@ -56,6 +56,10 @@
     box-shadow: 0px 0px 0px !important;
     border: 1px solid #E5E5E5;
   }
+
+  .rb {
+    border-radius: 0px 0px 23px 23px;
+  }
 }
 
 .bubblebutton {
@@ -79,12 +83,17 @@
     margin-right: 18px;
 }
 
-.bubblebutton:hover, .search_bar:hover, .search_result.search_page:hover {
+.bubblebutton:hover, .search_bar:hover {
     box-shadow: 0px 1px 5px 0.4px #c7c7c7;
     z-index: 500;
 }
 
-.bubblebutton:active, .search_bar:active {
+.search_result.search_page:hover {
+    box-shadow: 0px 1px 5px 0.4px #c7c7c7;
+    z-index: 500;
+}
+
+.bubblebutton:active, .search_bar:active, .search_result.search_page:active {
     box-shadow: 0px 1px 3.5px 0.1px #c7c7c7;
 }
 
@@ -132,7 +141,7 @@ img.search_page.portrait_icon {
     height: 40px;
 }
 
-.peacemaker.student_page {
+.peacemaker.student_page, .peacemaker.search_page.header {
     display: flex;
 }
 
@@ -288,8 +297,16 @@ a.search_page {
 }
 
 .result_count {
-    padding: 18px;
     color: #C7C7C7;
+}
+
+.result_count, .home_link {
+    padding: 18px;
+    display: inline-block;
+}
+
+.home_link {
+    text-decoration: none;
 }
 
 .share_menu {
@@ -363,6 +380,6 @@ a {
     -webkit-user-select: none;
 }
 
-.rb {
-    border-radius: 0px 0px 23px 23px;
+a.search_page {
+    color: black;
 }

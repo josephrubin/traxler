@@ -38,7 +38,12 @@ def _main():
                 assert len(possible_ids) == 2
                 net_id = possible_ids[0]
                 study = student['acad_plan_descr'] or 'Undeclared'
+                # Collface hasn't yet changed Woodrow Wilson, so we're going to
+                # do the right thing.
+                if "Woodrow Wilson".upper() in study.upper():
+                    study = "Public and International Affairs"
                 degree = 'BSE' if 'BSE' in student['program'] else 'AB'
+                # Collface has fixed Wilson College, however.
                 college = student['college'].lower().capitalize()
                 if college == 'Rkefeller':
                     college = 'Rocky'

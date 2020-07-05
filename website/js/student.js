@@ -226,12 +226,12 @@ class App extends React.Component {
       )
     }
     var header = (
-        <div className="peacemaker student_page">
-          {backBubble}
-          <SearchBar fill={this.state.student.netId} />
-          <ShareBubble name={this.state.student.name} src="icon/share.png" xtra="fr" />
-          <ShareMenu name={this.state.student.name} />
-        </div>
+      <div className="peacemaker student_page">
+        {backBubble}
+        <SearchBar fill={this.state.student.netId} />
+        <ShareBubble name={this.state.student.name} src="icon/share.png" xtra="fr" />
+        <ShareMenu name={this.state.student.name} />
+      </div>
     );
     var body = (
       <>
