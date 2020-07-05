@@ -13,7 +13,7 @@ def _main():
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     student_table = dynamodb.Table('dynamo-tongue-student-prod')
 
-    with open('all_princeton_new.json', 'r') as data:
+    with open('all_two.json', 'r') as data:
         students = json.loads(data.read())['data']
         student_count = len(students)
 

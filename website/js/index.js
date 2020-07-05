@@ -20,13 +20,17 @@ class Infobar extends React.Component {
 }
 
 class SearchBar extends React.Component {
-  componentDidMount() {
+  focusMe() {
     document.getElementById('search_bar').focus();
+  }
+
+  componentDidMount() {
+    this.focusMe();
   }
 
   render() {
     return (
-      <div className="index_page search_bar">
+      <div className="index_page search_bar" onClick={this.focusMe}>
         <img className={"icon search " + this.props.xxtra} src="icon/search.png" />
         <form className="form" method="GET" action="/search.html">
           <input id="search_bar" name="q" className="search"

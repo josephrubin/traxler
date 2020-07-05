@@ -76,12 +76,16 @@ class BackBubble extends React.Component {
 }
 
 class SearchBar extends React.Component {
+  focusMe() {
+    document.getElementById('search_bar').focus();
+  }
+
   render() {
     return (
-      <div className="student_page search_bar">
+      <div className="student_page search_bar" onClick={this.focusMe}>
         <img className={"icon search " + this.props.xxtra} src="icon/search.png" />
         <form className="form" method="GET" action="/search.html">
-          <input name="q" className="search student_page" defaultValue={this.props.fill} />
+          <input id="search_bar" name="q" className="search student_page" defaultValue={this.props.fill} />
            <input type="hidden" name="token" value={urlParams.get("token")} />
           <input type="submit" />
         </form>
@@ -211,7 +215,7 @@ class App extends React.Component {
           <ShareBubble name={this.state.student.name} src="icon/share.png" xtra="fr" />
         </div>
 
-        <Portrait xtra="student_page" src={"http://collface.deptcpanel.princeton.edu/img/" + this.state.student.image} />
+        <Portrait xtra="student_page" src={"https://collface.deptcpanel.princeton.edu/img/" + this.state.student.image} />
 
         <div className="student_page spacer_one"></div>
 

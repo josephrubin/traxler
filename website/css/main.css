@@ -111,8 +111,8 @@
     background-color: white;
 }
 
-.bubblebutton:hover {
-    background-color: #eeeeee;
+.bubblebutton:hover, .search_bar:hover {
+    box-shadow: 0px 1px 5px 0.4px #c7c7c7;
 }
 
 .fr {
@@ -246,7 +246,7 @@ span.alongside_icon_small, a.alongside_icon_small {
 
 .spacer_one.student_page {
     height: calc(60vw + 80px);
-    max-height: 340px;
+    max-height: 325px;
 }
 
 .bubblebutton.search {
@@ -367,4 +367,11 @@ img.share_icon {
 
 .clip {
     display: none;
+}
+
+a {
+    cursor: pointer;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
 }

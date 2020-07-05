@@ -1,6 +1,13 @@
 "use strict";
 
 const urlParams = new URLSearchParams(window.location.search);
+const storage = window.localStorage;
+
+function navigateStudent(e, url) {
+  scroll = document.documentElement.scrollTop;
+  storage.setItem("lastScroll", scroll);
+  window.location.href = url;
+}
 
 class Frame extends React.Component {
   render() {
@@ -11,7 +18,7 @@ class Frame extends React.Component {
 class SearchResult extends React.Component {
   render() {
     return (
-      <a className="search_page" href={this.props.click}>
+      <a className="search_page" onClick={(e) => navigateStudent(e, this.props.click)}>
         <div className="search_result search_page" style={{backgroundColor: this.props.color}}>
           {this.props.children}
         </div>
@@ -34,15 +41,23 @@ class Portrait extends React.Component {
 }
 
 class SearchBar extends React.Component {
+  focusMe() {
+    document.getElementById('search_bar').focus();
+  }
+
+  componentDidMount() {
+    this.focusMe();
+  }
+
   componentDidMount() {
     // Fill the search bar with the query and move the cursor to the end of the text input.
-    document.getElementById('search_bar').focus();
+    this.focusMe();
     document.getElementById('search_bar').value = urlParams.get('q');
   }
 
   render() {
     return (
-      <div className="search_page search_bar">
+      <div className="search_page search_bar" onClick={this.focusMe}>
         <img className={"icon search " + this.props.xxtra} src="icon/search.png" />
         <form className="form" method="GET" action="/search.html">
           <input id="search_bar" name="q" className="search"
@@ -66,11 +81,35 @@ class App extends React.Component {
   }
 
   componentDidMount() {
+    // Get the user's query.
     var q = urlParams.get("q")
+
+    // Check to see if the query is in the cache.
+    var lastRequest = JSON.parse(storage.getItem('lastRequest'))
+    if (lastRequest && lastRequest['q'] == q) {
+      // Cache hit.
+      var res = lastRequest['data']
+
+      this.setState({
+        isLoaded: true,
+        students: res.students,
+        q: q,
+        result_count_text: res.students.length +
+          (res.students.length == 1 ? " Result" : " Results")
+      });
+
+      // Restore the last scroll (not needed for Firefox, but needed for Chrome).
+      setTimeout(function() {document.documentElement.scrollTop = storage.getItem('lastScroll')}, 10)
+      return;
+    }
+
+    // Cache miss.
     var token = urlParams.get("token")
     fetch("https://api.stalk.page/search/?token=" + token + "&count=0&start=0&q=" + q)
       .then(res => res.json())
       .then(res => {
+          storage.setItem('lastRequest', JSON.stringify({'q': q, 'data': res}))
+          storage.setItem('lastScroll', "")
           this.setState({
             isLoaded: true,
             students: res.students,
@@ -115,7 +154,7 @@ class App extends React.Component {
           <SearchResult color={color} click={"student.html?!=" + student.netId + "&token=" + urlParams.get("token")}>
             <div className="peacemaker search_page">
               <h1 className="search_page">{student.name}<span style={{color: "#C7C7C7"}}> '{student.year}</span></h1>
-              <Portrait src={"http://collface.deptcpanel.princeton.edu/img/" + student.image} />
+              <Portrait src={"https://collface.deptcpanel.princeton.edu/img/" + student.image} />
             </div>
             <h2 className="search_page">{(student.study == "Computer Science" ? student.degree + " " : "") + student.study}</h2>
           </SearchResult>
