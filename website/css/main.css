@@ -7,13 +7,15 @@
 }
 
 .frame {
-    padding-top: 20px;
+    padding-top: 18px;
+    border-radius: 0px 0px 23px 23px;
+    overflow: hidden;
 }
 
-.frame.student_page, .frame.index_page {
+.frame.student_page {
+    padding-bottom: 18px;
     padding-left: 18px;
     padding-right: 18px;
-    padding-bottom: 18px;
 }
 
 @media only screen and (min-width: 600px) {
@@ -21,16 +23,12 @@
     padding-left: 75px;
     padding-right: 75px;
   }
-
-  input.search.student_page {
-    width: 76% !important;
-  }
 }
 
 @media only screen and (min-width: 800px) {
   .frame.student_page, .frame.index_page {
-    padding-left: 25px;
-    padding-right: 25px;
+    padding-left: 18px;
+    padding-right: 18px;
     background-color: white !important;
   }
 
@@ -41,57 +39,31 @@
     margin-bottom: 25px;
   }
 
-  input.search.student_page, input.search.index_page {
-    width: 72% !important;
-  }
-
-  div.portrait {
+  img.student_page.portrait {
     border-radius: 0px !important;
+    box-shadow: 0px 0px 0px !important;
+    border: 1px solid #E5E5E5;
   }
 }
 
 @media only screen and (min-width: 1000px) {
-  .frame.student_page, .frame.index_page {
-    padding-left: 25px;
-    padding-right: 25px;
-    background-color: white !important;
-  }
-
   .frame {
     margin-left: 225px;
     margin-right: 225px;
     box-shadow: 0px 1px 3.5px 0.1px #c7c7c7;
     margin-bottom: 25px;
   }
-
-  input.search.student_page, input.search.index_page {
-    width: 72% !important;
-  }
 }
 
 @media only screen and (min-width: 1200px) {
-  .frame.student_page, .frame.index_page {
-    padding-left: 25px;
-    padding-right: 25px;
-  }
-
   .frame {
     margin-left: 375px;
     margin-right: 375px;
     box-shadow: 0px 1px 3.5px 0.1px #c7c7c7;
   }
-
-  input.search.student_page, input.search.index_page {
-    width: 80% !important;
-  }
 }
 
 @media only screen and (min-width: 1400px) {
-  .frame.student_page, .frame.index_page {
-    padding-left: 25px;
-    padding-right: 25px;
-  }
-
   .frame {
     margin-left: 450px;
     margin-right: 450px;
@@ -109,48 +81,55 @@
     display: inline-block;
     cursor: pointer;
     background-color: white;
+    flex-grow: 1;
 }
 
-.bubblebutton:hover, .search_bar:hover {
+.bubblebutton.share {
+    margin-left: 18px;
+}
+
+.bubblebutton.back {
+    margin-right: 18px;
+}
+
+.bubblebutton:hover, .search_bar:hover, .search_result.search_page:hover {
     box-shadow: 0px 1px 5px 0.4px #c7c7c7;
+    z-index: 500;
+}
+
+.bubblebutton:active, .search_bar:active {
+    box-shadow: 0px 1px 3.5px 0.1px #c7c7c7;
 }
 
 .fr {
     float: right;
 }
 
-div.portrait {
-    border-radius: 1000px;
-    border: 1px solid #c7c7c7;
-}
-
-div.student_page.portrait {
-    max-width: 220px;
-    max-height: 250px;
-    width: 60vw;
-    height: 60vw;
+img.student_page.portrait {
+    width: 202px;
+    /*height: 270px;*/
     position: absolute;
     top: 100px;
     left: 50%;
     overflow: hidden;
     transform: translateX(-50%);
-}
-
-img.student_page.portrait {
-    width: 60vw;
-    max-width: 220px;
+    border-radius: 23px;
+    overflow: hidden;
+    box-shadow: 0px 1px 3.5px 0.1px #C7C7C7;
 }
 
 div.search_page.portrait {
     width: 30px;
     height: 30px;
     margin-top: -4px;
+    border-radius: 100px;
     overflow: hidden;
     display: inline-block;
 }
 
 img.search_page.portrait {
     width: 30px;
+    transform: translateY(-2px);
 }
 
 img.search_page.portrait_icon {
@@ -160,10 +139,15 @@ img.search_page.portrait_icon {
 
 .peacemaker {
     width: 100%;
+    position: relative;
 }
 
 .peacemaker.search_page {
     height: 40px;
+}
+
+.peacemaker.student_page {
+    display: flex;
 }
 
 h1.student_page {
@@ -232,8 +216,16 @@ span.alongside_icon_small, a.alongside_icon_small {
 
 .rule {
     height: 1px;
-    background-color: #C7C7C7;
+    background-color: #E5E5E5;
+}
+
+.rule_absolute {
+    position: absolute;
+    height: 1px;
+    background-color: #E5E5E5;
     z-index: 1000;
+    margin-left: 10px;
+    width: calc(100% - 20px);
 }
 
 .inbar.student_page {
@@ -241,23 +233,11 @@ span.alongside_icon_small, a.alongside_icon_small {
 }
 
 .inbar_group.student_page {
-    margin-top: 45px;
+    margin-top: 42px;
 }
 
 .spacer_one.student_page {
-    height: calc(60vw + 80px);
-    max-height: 325px;
-}
-
-.bubblebutton.search {
-    position: absolute;
-    top: 25px;
-    border-radius: 1000px;
-    text-align: left;
-    padding-right: 16px;
-    border: 1px solid #c7c7c7;
-    box-shadow: 0px 1px 3.5px 0.1px #c7c7c7;
-    z-index: 100;
+    height: 330px;
 }
 
 .search_bar {
@@ -266,14 +246,12 @@ span.alongside_icon_small, a.alongside_icon_small {
     top: 25px;
     border-radius: 1000px;
     text-align: left;
-    padding-right: 16px;
-    box-shadow: 0px 1px 3.5px 0.1px #c7c7c7;
+    box-shadow: 0px 1px 3.5px 0.1px #C7C7C7;
     z-index: 100;
 }
 
 .student_page.search_bar {
-    width: calc(100% - 152px);
-    margin-left: 22px;
+    width: 100%;
     display: inline-block;
 }
 
@@ -282,11 +260,12 @@ span.alongside_icon_small, a.alongside_icon_small {
 }
 
 input.search.student_page {
-    width: 66%;
+    /* Give the serch bar some more space on the constricted student page. */
+    width: calc(100% - 64px);
 }
 
 input.search {
-    width: 84%;
+    width: calc(100% - 70px);
     height: 44px;
     transform: translateY(2px);
     font-size: 16px;
@@ -310,11 +289,12 @@ input[type=submit] {
 .search_result {
     padding: 18px;
     padding-right: 16px;
+    position: relative;
     background-color: aqua;
 }
 
 .search_result.search_page {
-    border-top: 1px solid #C7C7C7;
+    border-top: 1px solid #E5E5E5;
 }
 
 a.search_page {
@@ -322,47 +302,68 @@ a.search_page {
 }
 
 .result_count {
-    margin-bottom: 10px;
-    margin-top: 8px;
     padding: 18px;
     color: #C7C7C7;
 }
 
 .share_menu {
     display: inline-block;
-    background-color: white;
     border-radius: 24px;
-    padding: 12px;
-    padding-top: 6px;
-    padding-bottom: 6px;
     text-align: right;
     font-size: 16px;
-    line-height: 35px;
-    box-shadow: 0px 1px 3.5px 0.1px #c7c7c7;
+    box-shadow: 0px 1px 3.5px 0.1px #C7C7C7;
     position: absolute;
     top: 0px;
     right: 0px;
-    width: 104px;
+    /*width: 104px;*/
     user-select: none;
     -moz-user-select: none;
     -webkit-user-select: none;
     visibility: hidden;
     opacity: 0;
     transition: visibility 0.1s, opacity 0.1s linear;
+    cursor: pointer;
+    overflow: hidden;
+    z-index: 2000;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.share_menu:hover {
-    background-color: #eeeeee;
+.share_menu_item:hover, .share_menu_item_constricted:hover {
+    background-color: #eeeeee !important;
+}
+
+.share_menu_item {
+    padding-left: 15px;
+    padding-right: 12px;
+    padding-top: 13px;
+    padding-bottom: 13px;
+    background-color: white;
+}
+
+.share_menu_item_constricted.share {
+    padding-left: 15px;
+    padding-right: 12px;
+    padding-top: 15px;
+    padding-bottom: 8px;
+    background-color: white;
+}
+
+.share_menu_item_constricted.copy {
+    padding-left: 15px;
+    padding-right: 12px;
+    padding-top: 8px;
+    padding-bottom: 15px;
+    background-color: white;
 }
 
 .share_menu span {
-    margin-right: 12px;
+    margin-right: 9px;
 }
 
 img.share_icon {
     width: 20px;
     height: 20px;
-    vertical-align: middle;
+    vertical-align: text-top;
 }
 
 .clip {

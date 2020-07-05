@@ -76,6 +76,7 @@ class App extends React.Component {
     super(props)
     this.state = {
       students: [],
+      slowCompleted: false,
       result_count_text: "Loading..."
     }
   }
@@ -84,47 +85,88 @@ class App extends React.Component {
     // Get the user's query.
     var q = urlParams.get("q")
 
-    // Check to see if the query is in the cache.
-    var lastRequest = JSON.parse(storage.getItem('lastRequest'))
-    if (lastRequest && lastRequest['q'] == q) {
-      // Cache hit.
-      var res = lastRequest['data']
+    // If this page was loaded from the browser back button
+    // (or our in-app back button), we want to load the previous
+    // search from the cache.
+    var tryCache = true;
+    if (window.performance && window.performance.getEntriesByType && window.performance.getEntriesByType('navigation')[0]) {
+      // If the browser supports this API, only use the cache if the page comes from history.
+      tryCache = (window.performance.getEntriesByType('navigation')[0].type == "back_forward");
+      // If the browser does not support this API, use the cache either way.
+    }
 
-      this.setState({
-        isLoaded: true,
-        students: res.students,
-        q: q,
-        result_count_text: res.students.length +
-          (res.students.length == 1 ? " Result" : " Results")
-      });
+    if (tryCache) {
+      // Check to see if the query is in the cache.
+      var lastState = JSON.parse(storage.getItem('lastState'));
+      if (lastState && lastState['q'] == q) {
+        // Cache hit.
+        this.setState(lastState);
 
-      // Restore the last scroll (not needed for Firefox, but needed for Chrome).
-      setTimeout(function() {document.documentElement.scrollTop = storage.getItem('lastScroll')}, 10)
-      return;
+        // Restore the last scroll (not needed for Firefox, but needed for Chrome).
+        setTimeout(function() {document.documentElement.scrollTop = storage.getItem('lastScroll')}, 10)
+        return;
+      }
     }
 
     // Cache miss.
     var token = urlParams.get("token")
-    fetch("https://api.stalk.page/search/?token=" + token + "&count=0&start=0&q=" + q)
+    // We make two API calls concurrently. Load the fast data ASAP and the slow data will follow.
+    this.fetchFast(token, q)
+    this.fetchSlow(token, q)
+  }
+
+  fetchFast(token, q) {
+    fetch("https://api.stalk.page/search/?token=" + token + "&count=0&start=0&fast=1&q=" + q)
       .then(res => res.json())
       .then(res => {
-          storage.setItem('lastRequest', JSON.stringify({'q': q, 'data': res}))
+          // If we somehow finished after the slow request, do nothing. The DOM is already populated.
+          if (this.state.slowCompleted) {
+            return;
+          }
           storage.setItem('lastScroll', "")
           this.setState({
             isLoaded: true,
             students: res.students,
             q: q,
             result_count_text: res.students.length +
-              (res.students.length == 1 ? " Result" : " Results")
+              (res.students.length == 1 ? " Result" : " Results") + " | Searching for more...",
+            error: false
           });
+          storage.setItem("lastState", JSON.stringify(this.state))
         },
-        error => {
+        er => {
           this.setState({
             isLoaded: true,
-            error
+            error: true
           });
         }
       )
+  }
+
+  fetchSlow(token, q) {
+    fetch("https://api.stalk.page/search/?token=" + token + "&count=0&start=0&fast=0&q=" + q)
+    .then(res => res.json())
+    .then(res => {
+        storage.setItem('lastScroll', "")
+        this.setState({
+          isLoaded: true,
+          slowCompleted: true,
+          students: res.students,
+          q: q,
+          result_count_text: res.students.length +
+            (res.students.length == 1 ? " Result" : " Results") +
+            (res.too_many_tokens ? " | Only the first four search terms are considered" : ""),
+          error: false
+        });
+        storage.setItem("lastState", JSON.stringify(this.state))
+      },
+      er => {
+        this.setState({
+          isLoaded: true,
+          error: true
+        });
+      }
+    )
   }
 
   render() {
@@ -154,7 +196,7 @@ class App extends React.Component {
           <SearchResult color={color} click={"student.html?!=" + student.netId + "&token=" + urlParams.get("token")}>
             <div className="peacemaker search_page">
               <h1 className="search_page">{student.name}<span style={{color: "#C7C7C7"}}> '{student.year}</span></h1>
-              <Portrait src={"https://collface.deptcpanel.princeton.edu/img/" + student.image} />
+              <Portrait src={"https://www.stalk.page/small/" + student.image} />
             </div>
             <h2 className="search_page">{(student.study == "Computer Science" ? student.degree + " " : "") + student.study}</h2>
           </SearchResult>
@@ -162,6 +204,16 @@ class App extends React.Component {
       )
       }
       )
+
+    if (this.state.isLoaded && this.state.error) {
+      results = (
+        <SearchResult color={"white"} click={"javvascript:return false;"}>
+          <h2>We're Sorry</h2>
+          <br />
+          <span>The server encounter an error. Please try refreshing the page. We apologize for the inconvenience.</span>
+        </SearchResult>
+      )
+    }
 
     return (
       <Frame>

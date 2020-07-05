@@ -2,3 +2,5 @@
 img/*
 img/
 env/
+*.jpg
+__pycache__/

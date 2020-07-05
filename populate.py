@@ -1,7 +1,12 @@
 import os
+import urllib.request
+import urllib.error
 
 import boto3
 import json
+from PIL import Image
+
+import rng
 
 
 IMAGE_URL = 'http://collface.deptcpanel.princeton.edu/img/{}'
@@ -13,12 +18,17 @@ def _main():
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     student_table = dynamodb.Table('dynamo-tongue-student-prod')
 
-    with open('all_two.json', 'r') as data:
+    s3 = boto3.resource('s3', region_name='us-east-1')
+    image_bucket = s3.Bucket('tongue-image')
+
+    with open('princeton_all.json', 'r') as data:
         students = json.loads(data.read())['data']
         student_count = len(students)
 
         with student_table.batch_writer() as batch:
             for i, student in enumerate(students):
+                if i < 900:
+                    continue
                 # Get student information in a friendly form.
                 name = student['name']
                 fname = name.split(' ')[0]
@@ -36,8 +46,33 @@ def _main():
                     college = 'First College'
                 image = student['img']
                 image_url = IMAGE_URL.format(image)
-                # Right now we aren't hosting the images ourselves,
-                # just serving them from collface.
+
+                # Download the image.
+                try:
+                    urllib.request.urlretrieve(image_url, 'temp_image.jpg')
+                except urllib.error.HTTPError as e:
+                    print('When considering', image_url)
+                    print('For', name)
+                    print('error:', e)
+                photo = Image.open('temp_image.jpg')
+                photo_raw = Image.new(photo.mode, photo.size)
+                photo_raw.putdata(list(photo.getdata()))
+                try:
+                    photo_raw.save('image_large.jpg')
+                    photo_raw.thumbnail((64, 64), Image.ANTIALIAS)
+                    photo_raw.save('image_small.jpg')
+                except Exception as e:
+                    print('When considering', image_url)
+                    print('For', name)
+                    print('error:', e)
+                    print('trying again...')
+                    photo_raw = photo_raw.convert("RGB")
+                    photo_raw.save('image_large.jpg')
+                    photo_raw.thumbnail((64, 64), Image.ANTIALIAS)
+                    photo_raw.save('image_small.jpg')
+
+                # Create a new resource ID for the image.
+                image_id = rng.id(24) + '.jpg'
 
                 batch.put_item(
                     Item={
@@ -52,9 +87,15 @@ def _main():
                         'study': study,
                         'degree': degree,
                         'college': college,
-                        'image': image
+                        'image': image_id
                     }
                 )
+
+                # Upload the image to s3.
+                image_bucket.upload_file('image_large.jpg',
+                                         'prod/large/{}'.format(image_id))
+                image_bucket.upload_file('image_small.jpg',
+                                         'prod/small/{}'.format(image_id))
 
                 if i != 0 and i % 300 == 0:
                     print(100 * (i / student_count), '%')
