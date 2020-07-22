@@ -34,9 +34,9 @@ class SearchBar extends React.Component {
         <img className={"icon search " + this.props.xxtra} src="icon/search.png" />
         <form className="form" method="GET" action="/search.html">
           <input id="search_bar" name="q" className="search"
+            placeholder="Search by name or netid"
            //autoFocus="autoFocus"
             />
-           <input type="hidden" name="token" value={urlParams.get("token")} />
           <input type="submit" />
         </form>
       </div>
@@ -58,16 +58,19 @@ class App extends React.Component {
         </div>
         <div className="rule"></div>
         <Infobar
+          key="1"
           title="Welcome! We're glad you made it."
           body="This website lets you find fellow Princeton undergrads. Just use the bar above to search."
           color={color_four}
         />
         <Infobar
+          key="2"
           title="What can I search for?"
           body="It's best if you start with a name. If you're not sure about the spelling, try using full names. We'll do our best from there."
           color={color_two}
         />
         <Infobar
+          key="3"
           title="What's with the design of this website?"
           body={[
             "Errr.... ",
@@ -79,15 +82,30 @@ class App extends React.Component {
           color={color_one}
         />
         <Infobar
-          title="Disclaimer"
+          key="4"
+          title="Information"
+          body="This site uses cookies to keep you logged in and speed up navigation. By using this site you agree to have cookies stored on your device."
+          color={color_two}
+        />
+        <Infobar
+          key="5"
+          title="Policies"
           body="This site is provided for informational purposes only. Do not use this site to stalk or harrass anybody."
           color={color_four}
         />
         <Infobar
+          key="6"
           title="I have a concern with the site"
           body={["We're sorry to hear it. If you want your information taken down, make sure it’s gone from the residential college facebook, then fill out ",
                   <a href="https://docs.google.com/forms/d/e/1FAIpQLSeilPyg8O-HgPPOTLzXXwPhtga40cZenhwqd7VTOfW96UthUA/viewform">this form</a>, "."]}
           color={color_three}
+        />
+        <Infobar
+          key="7"
+          title="I have a correction to make to your search results"
+          body={["If you think our search results could be improved, please fill out ",
+                  <a href="https://docs.google.com/forms/d/e/1FAIpQLSc1n9raVxDINjtMTzovnwBHEe3BtG58Z7u-XvFy7KGBLAfxcg/viewform">this form</a>, "."]}
+          color={color_one}
         />
       </Frame>
     )

@@ -63,7 +63,6 @@ class SearchBar extends React.Component {
           <input id="search_bar" name="q" className="search"
            //autoFocus="autoFocus"
             />
-           <input type="hidden" name="token" value={urlParams.get("token")} />
           <input type="submit" />
         </form>
       </div>
@@ -85,6 +84,19 @@ class App extends React.Component {
   componentDidMount() {
     // Get the user's query.
     var q = urlParams.get("q")
+
+    // If the query string is blank (or just spaces), don't make the API
+    // request as the server will not allow that query.
+    if (q.split(' ').join('') == '') {
+      this.setState({
+        isLoaded: true,
+        students: [],
+        q: q,
+        result_count_text: "0 Results",
+        error: false
+      });
+      return
+    }
 
     // If this page was loaded from the browser back button
     // (or our in-app back button), we want to load the previous
@@ -110,16 +122,27 @@ class App extends React.Component {
     }
 
     // Cache miss.
-    var token = urlParams.get("token")
     // We make two API calls concurrently. Load the fast data ASAP and the slow data will follow.
-    this.fetchFast(token, q)
-    this.fetchSlow(token, q)
+    this.fetchFast(q)
+    this.fetchSlow(q)
   }
 
-  fetchFast(token, q) {
-    fetch("https://api.stalk.page/search/?token=" + token + "&count=0&start=0&fast=1&q=" + q)
-      .then(res => res.json())
+  fetchFast(q) {
+    fetch("https://api.nassau.network/search/?count=0&start=0&fast=1&q=" + q, {
+      credentials: 'include'
+    })
       .then(res => {
+          if (res.status == 403) {
+            window.location.href = "https://nassau.network/login.html?ref=" + window.location.href;
+            return;
+          }
+          return res.json()
+      })
+      .then(res => {
+          if (res.status == 403) {
+            window.location.href = "https://nassau.network/login.html?ref=" + window.location.href;
+          }
+
           // If we somehow finished after the slow request, do nothing. The DOM is already populated.
           if (this.state.slowCompleted) {
             return;
@@ -144,9 +167,17 @@ class App extends React.Component {
       )
   }
 
-  fetchSlow(token, q) {
-    fetch("https://api.stalk.page/search/?token=" + token + "&count=0&start=0&fast=0&q=" + q)
-    .then(res => res.json())
+  fetchSlow(q) {
+    fetch("https://api.nassau.network/search/?count=0&start=0&fast=0&q=" + q, {
+      credentials: 'include'
+    })
+    .then(res => {
+        if (res.status == 403) {
+          window.location.href = "https://nassau.network/login.html?ref=" + window.location.href;
+          return;
+        }
+        return res.json()
+    })
     .then(res => {
         storage.setItem('lastScroll', "")
         this.setState({
@@ -201,10 +232,10 @@ class App extends React.Component {
 
       return (
         <div key={student.netId} className={extraClasses}>
-          <SearchResult extraClasses={extraClasses} color={color} click={"student.html?!=" + student.netId + "&token=" + urlParams.get("token")}>
+          <SearchResult extraClasses={extraClasses} color={color} click={"student.html?!=" + student.netId}>
             <div className={"peacemaker search_page"}>
               <h1 className="search_page">{student.name}<span style={{color: "#C7C7C7"}}> '{student.year}</span></h1>
-              <Portrait src={"https://www.stalk.page/small/" + student.image} />
+              <Portrait src={"/small/" + student.image} />
             </div>
             <h2 className="search_page">{(student.study == "Computer Science" ? student.degree + " " : "") + student.study}</h2>
           </SearchResult>
@@ -215,7 +246,7 @@ class App extends React.Component {
 
     if (this.state.isLoaded && this.state.error) {
       results = (
-        <SearchResult extraClasses={"rb"} color={"white"} click={"javvascript:return false;"}>
+        <SearchResult extraClasses={"rb"} color={"white"} click={"https://"}>
           <h2>We're Sorry</h2>
           <br />
           <span>The server encounter an error. Please try refreshing the page. We apologize for the inconvenience.</span>

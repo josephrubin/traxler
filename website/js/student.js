@@ -16,7 +16,7 @@ function hideShareMenu(e) {
 
 function navigatorShare(e, name) {
   navigator.share({
-    title: 'Stalk.page',
+    title: 'Nassau Network',
     text: "Check out " + name + "'s profile.",
     url: location.href + "&ref=share",
   })
@@ -90,7 +90,6 @@ class SearchBar extends React.Component {
         <img className={"icon search " + this.props.xxtra} src="icon/search.png" />
         <form className="form" method="GET" action="/search.html">
           <input id="search_bar" name="q" className="search student_page" defaultValue={this.props.fill} />
-           <input type="hidden" name="token" value={urlParams.get("token")} />
           <input type="submit" />
         </form>
       </div>
@@ -170,8 +169,16 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    fetch("https://api.stalk.page/students/" + urlParams.get('!') + "?token=" + urlParams.get("token"))
-      .then(res => res.json())
+    fetch("https://api.nassau.network/students/" + urlParams.get('!'), {
+      credentials: 'include'
+    })
+      .then(res => {
+          if (res.status == 403) {
+            window.location.href = "https://nassau.network/login.html?ref=" + window.location.href;
+            return;
+          }
+          return res.json()
+      })
       .then(res => {
           var color = "#ffffff"
           switch (Number(res.student.year)) {
@@ -253,7 +260,7 @@ class App extends React.Component {
       else {
         body = (
           <>
-            <Portrait src={"https://www.stalk.page/large/" + this.state.student.image} />
+            <Portrait src={"/large/" + this.state.student.image} />
 
             <div className="student_page spacer_one"></div>
 

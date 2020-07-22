@@ -1,3 +1,5 @@
+"""Deprecated. Download images from collface from a json file."""
+
 import urllib.request
 import json
 
