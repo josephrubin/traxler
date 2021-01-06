@@ -1,0 +1,6 @@
+function: Contains the server-side lambda code.
+marketing: Contains publicity attempts.
+requirements.txt: Packages needed for development.
+setup: The script ot setup the environment before working.
+static: Contains the static files for the website.
+tool: Contains scripts to aid in development.

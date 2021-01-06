@@ -1,0 +1,78 @@
+#!/bin/bash
+
+# Setup the environment for traxler development/deployment.
+# $ . setup [--full]
+
+# File/dir. --------------------------------------------------------------------
+
+# The root of the entire traxler tree.
+ROOT="$(while [ "$PWD" != '/' ]; do test -e .tx_root && pwd && break; cd ..; done)"
+
+# Contains the static website files.
+STATIC_DIR="$ROOT/static"
+
+# Contains scripts for accessing/modifying/running the server and database.
+TOOL_DIR="$ROOT/tool"
+PRODUCTIVITY_DIR="$ROOT/tool/productivity"
+
+# Path to python virtual environment.
+VENV_DIR="$ROOT/.tx"
+
+# Path to symlinks to put in path.
+PATH_DIR="$ROOT/tool/path"
+
+# AWS resources. ---------------------------------------------------------------
+
+# Bucket used to store student images.
+TX_S3_IMAGE_BUCKET="traxler-image"
+
+# Bucket used to store te static web pages.
+TX_S3_WEBSITE_BUCKET="traxler-website"
+
+# Table used to store student data.
+TX_DYNAMODB_STUDENT_TABLE="dynamo-traxler-student-prod"
+
+# Export. ----------------------------------------------------------------------
+
+# Allow other scripts to access important project constants.
+export ROOT STATIC_DIR TOOL_DIR PRODUCTIVITY_DIR RUNTIME_DIR
+
+# Add some of our tools to PATH.
+export PATH="$PATH_DIR:$PATH"
+
+# Export the AWS resource names.
+export TX_S3_IMAGE_BUCKET TX_DYNAMODB_STUDENT_TABLE
+
+# Setup. -----------------------------------------------------------------------
+
+# Source all of the scripts in the include directory.
+for script in $TOOL_DIR/include/*.sh; do
+    source $script;
+done
+
+# Welcome the new developer.
+echo
+echo_traxler
+echo
+
+# If "--full" is supplied, create a new virtual environment and download listed
+# packages. This is only necessary after pulling a new commit.
+if [ "$1" = "--full" ]; then
+    # Leave the current virtual environment if we are in one.
+    if command -v deactivate > /dev/null; then
+        deactivate
+    fi
+
+    # Create and enter a new virtual environment.
+    echo Creating virtual environment.
+    python3 -m venv "$VENV_DIR"
+    source "$VENV_DIR/bin/activate"
+
+    # Install required python packages.
+    echo Installing packages.
+    pip install -qr "$ROOT/requirements.txt"
+    echo_green "All done!"
+else
+    # Enter the virtual environment.
+    source "$VENV_DIR/bin/activate"
+fi

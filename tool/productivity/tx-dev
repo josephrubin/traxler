@@ -2,7 +2,7 @@
 
 # Serve the website locally.
 _main() {
-    (cd website && python3 -m http.server)
+    (cd $STATIC_DIR && python3 -m http.server)
 }
 
 _main

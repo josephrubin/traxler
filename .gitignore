@@ -1,6 +1,17 @@
-*.json
-img/*
-img/
-env/
-*.jpg
+# Python.
 __pycache__/
+.tx/
+
+# Data.
+*.log
+*.json
+*.webp
+*.jpg
+*.jpeg
+
+# Working files.
+wip/
+todo
+
+# AWS.
+.aws_profile

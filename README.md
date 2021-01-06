@@ -1,37 +1,39 @@
-# tigerlink
+# Nassau Network
 
-Like tigerbk but you can give dev skill so people can ask you to work on proj
+## I want to use!
 
-Consolidates info better.
+*Princeton's voguish directory*
+Nassau Network (https://nassau.network) is the hit new directory for Princeton undergrads. Just sign in with your netid and start searching.
 
-pton.dev
-repl.ink
-tigerl.ink
-princeton.directory
-tiger.directory
-pton.me (but princeton.me exists and is confusable)
-*.network
-nassau.network
-nass.network
-princeton.zone
-tigerlink.app
-tiger.community
-orange.me (premium, nvm)
-seek.me
-profile.wtf
-princeton.wtf
-so we would allow princeton.wtf/netid or /name and instantly find the person
-undergrad.me
-ugrad.me
-ugrad.wiki
-pton.world
-*tiger.report*
-princeton.report
-nas.report
-*princeton.fyi*
-*pton.fyi*
-*tig.fyi*
-*ptn.fyi* (has princeton branding in it, short)
-pn.fyi
-netid.fyi
-*prince.fyi*
+## I want to code!
+
+### Welcome to Traxler!
+
+Thanks for your interest Traxler, the code that powers https://nassau.network. This code base allows you to contribute to Nassau Network and even host your own version of the website if you want to.
+
+To start, clone this repo with the clone button above.
+
+#### Setup
+If you have just cloned the repo, or pulled a new version that requires new python packages, run:
+```bash
+setup --full
+```
+
+Otherwise, you must run 
+```bash
+setup
+```
+when you want to begin working on Traxler to set up your environment. This version (without `--full`) skips the package installation and should be much faster.
+
+#### Development
+The point of this repo is not simply to develop a Princeton face book. We also want to make this app super simple to develop and contain as little bloat as possible. To that end, we try to:
+1. Make it really easy to make changes.
+2. Reduce the number of unnecessary files.
+3. No node_modules folder, pls ;)
+
+If you are on bash, start typing: `tx-` and press TAB to see the autocomplete list. You should see a bunch of options that start with `tx-`. These scripts are there to help you code Traxler.
+
+To run the website localy at http://localhost:8000, use the command:
+```bash
+tx-dev
+```

@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Deploy the server infrastructure. --------------------------------------------
+
+# Todo: deploy infra.
+
+# Deploy the static website. ---------------------------------------------------
+
+# Copy the static files over to the S3 bucket, deleting any remote files that
+# are no longer needed.
+aws s3 sync $STATIC_DIR s3://$TX_S3_WEBSITE_BUCKET/prod --delete --profile=tongue
+
+# Todo: invalidate the cloudfront cache.
