@@ -1,7 +1,5 @@
 # Nassau Network
 
-## I want to use!
-
 *Princeton's voguish directory*
 
 Nassau Network (https://nassau.network) is the hit new directory for Princeton undergrads. Just sign in with your netid and start searching.
@@ -14,19 +12,19 @@ Thanks for your interest Traxler, the code that powers https://nassau.network. T
 
 To start, clone this repo with the clone button above.
 
-#### Setup
+#### 1) Setup
 If you have just cloned the repo or pulled a new version that requires new python packages, run:
 ```bash
-setup --full
+. setup --full
 ```
 
-Otherwise, you must run 
+Otherwise, just run
 ```bash
-setup
+. setup
 ```
 when you want to begin working on Traxler to set up your environment. This version (without `--full`) skips the package installation and should be much faster.
 
-#### Development
+#### 2) Development
 We want to make this app super simple to develop and contain as little bloat as possible. To that end, we try to:
 1. Make it really easy to make changes.
 2. Reduce the number of unnecessary files.
