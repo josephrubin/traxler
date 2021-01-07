@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  traxler
+
+  Princeton's voguish directory.
+
+# These apply to every resource of the matching type.
+Globals:
+
+  Function:
+    CodeUri: function/
+    Timeout: 3
+    Layers:
+      - !Ref CommonLambdaLayer
+      - !Ref DependencyLambdaLayer
+
+# These allow the user deploying the template to customize the deployment.
+Parameters:
+
+  WebsiteDomain:
+    Type: String
+    Default: nassau.network
+    Description: The domain name (including subdomain) Traxler will be hosted at.
+
+Resources:
+
+  # Buckets. -------------------------------------------------------------------
+
+  # Stores student images.
+  StudentImageBucket:
+    Type: AWS::S3::Bucket
+
+  # Hosts the static portion of the website.
+  StaticWebsiteBucket:
+    Type: AWS::S3::Bucket
+    WebsiteConfiguration:
+      IndexDocument: todo
+      ErrorDocument: todo
+
+  # CloudFront Distributions. --------------------------------------------------
+
+  StaticWebsiteCloudFront:
+
+  # DynamoDB Tables. -----------------------------------------------------------
+
+  # Lambdas. -------------------------------------------------------------------
+
+  # Returns information about a student.
+  StudentLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: student.lambda_handler
+      Runtime: python3.8
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /student
+            Method: GET
+
+  # Returns student results of a query.
+  SearchLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: search.lambda_handler
+      Runtime: python3.8
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /search
+            Method: GET
+
+  # Validates a CAS login.
+  ValidateLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: validate.lambda_handler
+      Runtime: python3.8
+      Events:
+        HelloWorld:
+          Type: Api
+          Properties:
+            Path: /validate
+            Method: GET
+
+  # Lambda Shared Code Layers. -------------------------------------------------
+  CommonLambdaLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: common/
+      Description: contains shared code for the lambdas.
+      CompatibleRuntimes:
+        - python3.8
+
+  # External pip dependency layer.
+  DependencyLambdaLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      ContentUri: dependency/
+      Description: contains the external libraries.
+      CompatibleRuntimes:
+        - python3.8
+
+#Outputs:
+  #HelloWorldApi:
+  #  Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+  #  Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
+  #HelloWorldFunction:
+  #  Description: "Hello World Lambda Function ARN"
+  #  Value: !GetAtt HelloWorldFunction.Arn
