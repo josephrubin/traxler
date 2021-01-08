@@ -15,12 +15,12 @@ To start, clone this repo with the clone button above.
 #### 1) Setup
 If you have just cloned the repo or pulled a new version that requires new python packages, run:
 ```bash
-. setup --full
+$ . setup --full
 ```
 
 Otherwise, just run
 ```bash
-. setup
+$ . setup
 ```
 when you want to begin working on Traxler to set up your environment. This version (without `--full`) skips the package installation and should be much faster.
 
@@ -34,5 +34,5 @@ If you are on bash, start typing: `tx-` and press TAB to see the autocomplete li
 
 To run the website locally at http://localhost:8000, use the command:
 ```bash
-tx-dev
+$ tx-dev
 ```

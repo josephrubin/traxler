@@ -1,19 +1,35 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  traxler
+  Traxler
 
   Princeton's voguish directory.
 
 # These apply to every resource of the matching type.
 Globals:
 
+  Tags:
+    - project: traxler
+
   Function:
     CodeUri: function/
+
+    # We generally want out functions to finish quickly because:
+    # 1) This is a good user experience, and
+    # 2) This saves us money!
     Timeout: 3
+
+    # Shared code layers (libraries) that all functions have access to.
     Layers:
       - !Ref CommonLambdaLayer
       - !Ref DependencyLambdaLayer
+
+    # Environment variables that all lambda functions have access to.
+    Environment:
+      Variables:
+        WEBSITE_DOMAIN: !Ref WebsiteDomain
+        STUDENT_INFORMATION_TABLE: !Ref StudentInformationTable
+        AUTHENTICATION_TABLE: !Ref AuthenticationTable
 
 # These allow the user deploying the template to customize the deployment.
 Parameters:
@@ -21,7 +37,7 @@ Parameters:
   WebsiteDomain:
     Type: String
     Default: nassau.network
-    Description: The domain name (including subdomain) Traxler will be hosted at.
+    Description: The domain name (including subdomain) Traxler will be hosted at
 
 Resources:
 
@@ -35,14 +51,115 @@ Resources:
   StaticWebsiteBucket:
     Type: AWS::S3::Bucket
     WebsiteConfiguration:
-      IndexDocument: todo
-      ErrorDocument: todo
+      IndexDocument: index.html
+      ErrorDocument: 404.html
 
   # CloudFront Distributions. --------------------------------------------------
-
+  """
+  # The CDN that serves the website content, both static html and images.
   StaticWebsiteCloudFront:
-
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: 'true'
+        Origins:
+          - DomainName: TODO
+            Id: StaticWebsiteOrigin
+            S3OriginConfig:
+              OriginAccessIdentity: TODO
+        Origins:
+          - DomainName: TODO
+            Id: StaticWebsiteOrigin
+            S3OriginConfig:
+              OriginAccessIdentity: TODO
+        Aliases:
+          - ${WebsiteDomain}
+  """
   # DynamoDB Tables. -----------------------------------------------------------
+
+  # The main Traxler database; stores the student information.
+  StudentInformationTable:
+    Type: AWS::DynamoDB::Table
+      Properties: 
+        # Princeton students can be unpredictable and are in one time zone, so
+        # no need to reserve capacity.
+        BillingMode: PAY_PER_REQUEST
+
+        AttributeDefinitions: 
+          # Defines the attributes we'll store in this table. There's no need to
+          # list every possible attribute as those can be created on-demand.
+          # We do need to list attributes used in all keys.
+          - AttributeName: _netid
+            AttributeType: S
+
+          - AttributeName: _college
+            AttributeType: S
+          - AttributeName: _study
+            AttributeType: S
+
+          - AttributeName: _fname
+            AttributeType: S
+          - AttributeName: _lname
+            AttributeType: S
+
+        # The main key is the student's netid.
+        KeySchema: 
+          - AttributeName: _netid
+            KeyType: HASH
+
+        GlobalSecondaryIndexes: 
+          # Allow query by residential college.
+          - IndexName: _college-index
+            KeySchema:
+              - AttributeName: _college
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          # Allow query by concentration.
+          - IndexName: _study-index
+            KeySchema:
+              - AttributeName: _study
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+          # Allow query by first name, subquery by last name.
+          - IndexName: _fname-_lname-index
+            KeySchema:
+              - AttributeName: _fname
+                KeyType: HASH
+              - AttributeName: _lname
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          # Allow query by last name, subquery by first name.
+          - IndexName: _lname_-fname-index
+            KeySchema:
+              - AttributeName: _lname
+                KeyType: HASH
+              - AttributeName: _fname
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+
+  # Stores access keys when users log into the site via CAS.
+  AuthenticationTable:
+    Type: AWS::DynamoDB::Table
+      Properties: 
+        # Princeton students can be unpredictable and are in one time zone, so
+        # no need to reserve capacity.
+        BillingMode: PAY_PER_REQUEST
+
+        AttributeDefinitions: 
+          # Defines the attributes we'll store in this table. There's no need to
+          # list every possible attribute as those can be created on-demand.
+          # We do need to list attributes used in all keys.
+          - AttributeName: _netid
+            AttributeType: S
+
+        # The main key is the student's netid.
+        KeySchema: 
+          - AttributeName: _netid
+            KeyType: HASH
 
   # Lambdas. -------------------------------------------------------------------
 
@@ -83,7 +200,7 @@ Resources:
           Type: Api
           Properties:
             Path: /validate
-            Method: GET
+            Method: POST
 
   # Lambda Shared Code Layers. -------------------------------------------------
   CommonLambdaLayer:
