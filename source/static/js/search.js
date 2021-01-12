@@ -128,19 +128,19 @@ class App extends React.Component {
   }
 
   fetchFast(q) {
-    fetch("https://api.nassau.network/search/?count=0&start=0&fast=1&q=" + q, {
+    fetch("https://" + apiDomain + "/search/?count=0&start=0&fast=1&q=" + q, {
       credentials: 'include'
     })
       .then(res => {
           if (res.status == 403) {
-            window.location.href = "https://nassau.network/login.html?ref=" + window.location.href;
+            window.location.href = "https://" + websiteDomain + "/login.html?ref=" + window.location.href;
             return;
           }
           return res.json()
       })
       .then(res => {
           if (res.status == 403) {
-            window.location.href = "https://nassau.network/login.html?ref=" + window.location.href;
+            window.location.href = "https://" + websiteDomain + "/login.html?ref=" + window.location.href;
           }
 
           // If we somehow finished after the slow request, do nothing. The DOM is already populated.
@@ -168,12 +168,12 @@ class App extends React.Component {
   }
 
   fetchSlow(q) {
-    fetch("https://api.nassau.network/search/?count=0&start=0&fast=0&q=" + q, {
+    fetch("https://" + apiDomain + "/search/?count=0&start=0&fast=0&q=" + q, {
       credentials: 'include'
     })
     .then(res => {
         if (res.status == 403) {
-          window.location.href = "https://nassau.network/login.html?ref=" + window.location.href;
+          window.location.href = "https://" + websiteDomain + "/login.html?ref=" + window.location.href;
           return;
         }
         return res.json()

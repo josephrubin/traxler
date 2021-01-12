@@ -1,8 +1,8 @@
 import json
 import os
+import time
 
 import boto3
-import time
 
 import authentication
 import response
@@ -19,7 +19,7 @@ def lambda_handler(event, context):
     
     # Get the supplied parameters.
     params = event['pathParameters']
-    netid = params['netId']
+    netid = params['netid']
     
     if netid == "":
         return response.bad_request()
@@ -38,4 +38,3 @@ def lambda_handler(event, context):
         return response.not_found()
         
     return response.okay(json.dumps({'student': item}))
-}

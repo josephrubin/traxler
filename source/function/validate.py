@@ -1,6 +1,5 @@
-import os
-
 import json
+import os
 import random
 import re
 import string
@@ -22,8 +21,8 @@ _AUTHENTICATION_TABLE = _DYNAMODB.Table(os.environ['AUTHENTICATION_TABLE'])
 #    Contains the parameter c=1 to let our app know that the login page was
 #    reached from a CAS validation redirect and to continue if successfully
 #    validated.
-_CAS_VALIDATION_URL = 'https://fed.princeton.edu/cas/serviceValidate'
-                      '?ticket={}'
+_CAS_VALIDATION_URL = 'https://fed.princeton.edu/cas/serviceValidate' \
+                      '?ticket={}'                                    \
                       '&service=https://{}/login.html?c=1'
 
 # Regex to get the user's netid from the cas response.
@@ -88,6 +87,7 @@ def lambda_handler(event, context):
                     'Set-Cookie': 'ticket={}; Max-Age={}; Secure; HttpOnly'.format(ticket, time_left),
                     'set-Cookie': 'netid={}; Max-Age={}; Secure; HttpOnly'.format(netid, time_left),
                 }
+            )
     else:
         uses = 0
 
@@ -103,15 +103,14 @@ def lambda_handler(event, context):
         }    
     )
     
-    return {
-        response.okay(
-            json.dumps({"message": "Could verify."}),
-            headers = {
-                # Add headers to set cookies on the user's browser. Using
-                # different capitalization allows us to set two cookies.
-                # Don't bother storing these cookies for longer than they will
-                # be valid from the server's point of view.
-                'Set-Cookie': 'ticket={}; Max-Age={}; Secure; HttpOnly'.format(ticket, AUTH_DURATION),
-                'set-Cookie': 'netid={}; Max-Age={}; Secure; HttpOnly'.format(netid, AUTH_DURATION),
-            }
-    }
+    return response.okay(
+        json.dumps({"message": "Could verify."}),
+        headers = {
+            # Add headers to set cookies on the user's browser. Using
+            # different capitalization allows us to set two cookies.
+            # Don't bother storing these cookies for longer than they will
+            # be valid from the server's point of view.
+            'Set-Cookie': 'ticket={}; Max-Age={}; Secure; HttpOnly'.format(ticket, AUTH_DURATION),
+            'set-Cookie': 'netid={}; Max-Age={}; Secure; HttpOnly'.format(netid, AUTH_DURATION)
+        }
+    )

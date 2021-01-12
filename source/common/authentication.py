@@ -1,7 +1,11 @@
+import os
 from http.cookies import SimpleCookie
 
+import boto3
 
-_AUTHENTICATION_TABLE = dynamodb.Table(os.environ['AUTHENTICATION_TABLE'])
+
+_DYNAMODB = boto3.resource('dynamodb')
+_AUTHENTICATION_TABLE = _DYNAMODB.Table(os.environ['AUTHENTICATION_TABLE'])
 
 
 def get_authentication_record(netid):
@@ -32,10 +36,12 @@ def validate(user_cookie):
     cookie = SimpleCookie()
     cookie.load(user_cookie)
 
-    netid_cookie = cookie['netid'].value
-    token_cookie = cookie['token'].value
+    try:
+        netid_cookie = cookie['netid'].value
+        token_cookie = cookie['token'].value
+    except KeyError:
+        return false
 
-    # The cookies must be present.
     if not netid_cookie or not token_cookie:
         return false
 

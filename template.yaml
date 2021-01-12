@@ -8,11 +8,8 @@ Description: >
 # These apply to every resource of the matching type.
 Globals:
 
-  Tags:
-    - project: traxler
-
   Function:
-    CodeUri: function/
+    CodeUri: source/function/
 
     # We generally want out functions to finish quickly because:
     # 1) This is a good user experience, and
@@ -34,132 +31,230 @@ Globals:
 # These allow the user deploying the template to customize the deployment.
 Parameters:
 
+  # Should be set by the deployer.
+  # ------------------------------
+
   WebsiteDomain:
     Type: String
     Default: nassau.network
-    Description: The domain name (including subdomain) Traxler will be hosted at
+    Description: The domain name (including subdomain) to host the traxler site.
+  ApiDomain:
+    Type: String
+    Default: api.nassau.network
+    Description: The domain name (including subdomain) the host the traxler api.
+  DomainCertificate:
+    Type: String
+    Description: The ACM certificate ARN provisioned for WebsiteDomain and ApiDomain.
+
+  # Set in the traxler setup script. Parameters are used to synchronize the
+  # client and server.
+  # -----------------------------------------------------------------------
+
+  ImageBucketName:
+    Type: String
+    Description: The name to use for the image bucket.
+  WebsiteBucketName:
+    Type: String
+    Description: The name to use for the website bucket.
+  StudentTableName:
+    Type: String
+    Description: The name to use for the student information table.
 
 Resources:
 
   # Buckets. -------------------------------------------------------------------
 
-  # Stores student images.
-  StudentImageBucket:
-    Type: AWS::S3::Bucket
-
   # Hosts the static portion of the website.
   StaticWebsiteBucket:
     Type: AWS::S3::Bucket
-    WebsiteConfiguration:
-      IndexDocument: index.html
-      ErrorDocument: 404.html
+    Properties:
+      BucketName: !Ref WebsiteBucketName
+
+  # Stores (student) images.
+  ImageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref ImageBucketName
+
+  # Bucket Policies / CloudFront Origin Access Identities. ---------------------
+
+  # Allow our CloudFront distribution (below) to access the website bucket.
+  DistributionAccessStaticWebsiteBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref StaticWebsiteBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 's3:GetObject'
+            Effect: Allow
+            Resource: !Sub 'arn:aws:s3:::${StaticWebsiteBucket}/*'
+            Principal:
+              AWS: !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${DistributionOriginAccessIdentity}
+
+  # Allow our CloudFront distribution (below) to access the image bucket.
+  DistributionAccessImageBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref ImageBucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 's3:GetObject'
+            Effect: Allow
+            Resource: !Sub 'arn:aws:s3:::${ImageBucket}/*'
+            Principal:
+              AWS: !Sub arn:aws:iam::cloudfront:user/CloudFront Origin Access Identity ${DistributionOriginAccessIdentity}
+
+  # Create an access identity for the CloudFront distribution.
+  DistributionOriginAccessIdentity:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties: 
+      CloudFrontOriginAccessIdentityConfig: 
+        Comment: "Identity used to access the S3 buckets."
 
   # CloudFront Distributions. --------------------------------------------------
-  """
+
   # The CDN that serves the website content, both static html and images.
-  StaticWebsiteCloudFront:
+  WebsiteContentCloudFront:
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
         Enabled: 'true'
-        Origins:
-          - DomainName: TODO
-            Id: StaticWebsiteOrigin
-            S3OriginConfig:
-              OriginAccessIdentity: TODO
-        Origins:
-          - DomainName: TODO
-            Id: StaticWebsiteOrigin
-            S3OriginConfig:
-              OriginAccessIdentity: TODO
+        # By default, ask the origin for index.html if no path given.
+        DefaultRootObject: index.html
+        # Tell CloudFront we'll be aliasing from the input domain name.
         Aliases:
-          - ${WebsiteDomain}
-  """
+          - !Ref WebsiteDomain
+        # Tell CloudFront where to get the certificate from. Note that this
+        # certificate should be generated through ACM once, before deploying
+        # this template.
+        ViewerCertificate:
+          AcmCertificateArn: !Ref DomainCertificate
+          MinimumProtocolVersion: TLSv1.2_2019
+          SslSupportMethod: sni-only
+        HttpVersion: http2
+        PriceClass: PriceClass_200
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - GET
+            - HEAD
+          TargetOriginId: StaticWebsiteOrigin
+          # If the user tries to use http, redirect them to https instead.
+          ViewerProtocolPolicy: redirect-to-https
+          # Standard optimized cache policy id.
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6
+        Origins:
+          # Static website pages and code.
+          - Id: StaticWebsiteOrigin
+            DomainName: !GetAtt StaticWebsiteBucket.DomainName
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${DistributionOriginAccessIdentity}
+          # Images.
+          - Id: ImageOrigin
+            DomainName: !GetAtt ImageBucket.DomainName
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub origin-access-identity/cloudfront/${DistributionOriginAccessIdentity}
+
   # DynamoDB Tables. -----------------------------------------------------------
 
-  # The main Traxler database; stores the student information.
+  # The main traxler database; stores the student information.
   StudentInformationTable:
     Type: AWS::DynamoDB::Table
-      Properties: 
-        # Princeton students can be unpredictable and are in one time zone, so
-        # no need to reserve capacity.
-        BillingMode: PAY_PER_REQUEST
+    Properties:
+      TableName: !Ref StudentTableName
 
-        AttributeDefinitions: 
-          # Defines the attributes we'll store in this table. There's no need to
-          # list every possible attribute as those can be created on-demand.
-          # We do need to list attributes used in all keys.
-          - AttributeName: _netid
-            AttributeType: S
+      # Princeton students can be unpredictable and are in one time zone, so
+      # no need to reserve capacity.
+      BillingMode: PAY_PER_REQUEST
 
-          - AttributeName: _college
-            AttributeType: S
-          - AttributeName: _study
-            AttributeType: S
+      AttributeDefinitions: 
+        # Defines the attributes we'll store in this table. There's no need to
+        # list every possible attribute as those can be created on-demand.
+        # We do need to list attributes used in all keys.
+        - AttributeName: _netid
+          AttributeType: S
 
-          - AttributeName: _fname
-            AttributeType: S
-          - AttributeName: _lname
-            AttributeType: S
+        - AttributeName: _college
+          AttributeType: S
+        - AttributeName: _study
+          AttributeType: S
 
-        # The main key is the student's netid.
-        KeySchema: 
-          - AttributeName: _netid
-            KeyType: HASH
+        - AttributeName: _fname
+          AttributeType: S
+        - AttributeName: _lname
+          AttributeType: S
 
-        GlobalSecondaryIndexes: 
-          # Allow query by residential college.
-          - IndexName: _college-index
-            KeySchema:
-              - AttributeName: _college
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-          # Allow query by concentration.
-          - IndexName: _study-index
-            KeySchema:
-              - AttributeName: _study
-                KeyType: HASH
-            Projection:
-              ProjectionType: ALL
-          # Allow query by first name, subquery by last name.
-          - IndexName: _fname-_lname-index
-            KeySchema:
-              - AttributeName: _fname
-                KeyType: HASH
-              - AttributeName: _lname
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
-          # Allow query by last name, subquery by first name.
-          - IndexName: _lname_-fname-index
-            KeySchema:
-              - AttributeName: _lname
-                KeyType: HASH
-              - AttributeName: _fname
-                KeyType: RANGE
-            Projection:
-              ProjectionType: ALL
+      # The main key is the student's netid.
+      KeySchema: 
+        - AttributeName: _netid
+          KeyType: HASH
+
+      GlobalSecondaryIndexes: 
+        # Allow query by residential college.
+        - IndexName: _college-index
+          KeySchema:
+            - AttributeName: _college
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        # Allow query by concentration.
+        - IndexName: _study-index
+          KeySchema:
+            - AttributeName: _study
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        # Allow query by first name, subquery by last name.
+        - IndexName: _fname-_lname-index
+          KeySchema:
+            - AttributeName: _fname
+              KeyType: HASH
+            - AttributeName: _lname
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        # Allow query by last name, subquery by first name.
+        - IndexName: _lname_-fname-index
+          KeySchema:
+            - AttributeName: _lname
+              KeyType: HASH
+            - AttributeName: _fname
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
 
   # Stores access keys when users log into the site via CAS.
   AuthenticationTable:
     Type: AWS::DynamoDB::Table
-      Properties: 
-        # Princeton students can be unpredictable and are in one time zone, so
-        # no need to reserve capacity.
-        BillingMode: PAY_PER_REQUEST
+    Properties: 
+      # Princeton students can be unpredictable and are in one time zone, so
+      # no need to reserve capacity.
+      BillingMode: PAY_PER_REQUEST
 
-        AttributeDefinitions: 
-          # Defines the attributes we'll store in this table. There's no need to
-          # list every possible attribute as those can be created on-demand.
-          # We do need to list attributes used in all keys.
-          - AttributeName: _netid
-            AttributeType: S
+      AttributeDefinitions: 
+        # Defines the attributes we'll store in this table. There's no need to
+        # list every possible attribute as those can be created on-demand.
+        # We do need to list attributes used in all keys.
+        - AttributeName: _netid
+          AttributeType: S
 
-        # The main key is the student's netid.
-        KeySchema: 
-          - AttributeName: _netid
-            KeyType: HASH
+      # The main key is the student's netid.
+      KeySchema: 
+        - AttributeName: _netid
+          KeyType: HASH
+
+  # API Gateways. --------------------------------------------------------------
+
+  # The main API that returns student information and validates logins.
+  ServerApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: main
+      # Configure custom domain for the API so the website knows how to invoke.
+      Domain:
+        CertificateArn: !Ref DomainCertificate
+        DomainName: !Ref ApiDomain
 
   # Lambdas. -------------------------------------------------------------------
 
@@ -170,60 +265,115 @@ Resources:
       Handler: student.lambda_handler
       Runtime: python3.8
       Events:
-        HelloWorld:
+        GetStudent:
           Type: Api
           Properties:
-            Path: /student
+            RestApiId: !Ref ServerApi
+            Path: /students/{netid}
             Method: GET
+      Policies:
+        # Give this lambda the permission to read student information.
+        - DynamoDBReadPolicy:
+            TableName:
+              !Ref StudentInformationTable
+        # This lambda needs read access to the auth table to validate auth.
+        - DynamoDBReadPolicy:
+            TableName:
+              !Ref AuthenticationTable
+        # This lambda needs write access to the auth table to count usage.
+        - DynamoDBWritePolicy:
+            TableName:
+              !Ref AuthenticationTable
 
-  # Returns student results of a query.
+  # Returns student results of a search query.
   SearchLambda:
     Type: AWS::Serverless::Function
     Properties:
       Handler: search.lambda_handler
       Runtime: python3.8
       Events:
-        HelloWorld:
+        GetSearch:
           Type: Api
           Properties:
+            RestApiId: !Ref ServerApi
             Path: /search
             Method: GET
+      Policies:
+        # Give this lambda the permission to read student information.
+        - DynamoDBReadPolicy:
+            TableName:
+              !Ref StudentInformationTable
+        # This lambda needs read access to the auth table to validate auth.
+        - DynamoDBReadPolicy:
+            TableName:
+              !Ref AuthenticationTable
+        # This lambda needs write access to the auth table to count usage.
+        - DynamoDBWritePolicy:
+            TableName:
+              !Ref AuthenticationTable
 
-  # Validates a CAS login.
+  # Validates a CAS login and adds authentication records for traxler.
   ValidateLambda:
     Type: AWS::Serverless::Function
     Properties:
       Handler: validate.lambda_handler
       Runtime: python3.8
       Events:
-        HelloWorld:
+        PostValidate:
           Type: Api
           Properties:
+            RestApiId: !Ref ServerApi
             Path: /validate
             Method: POST
+      Policies:
+        # This lambda needs read access to the auth table to validate auth.
+        - DynamoDBReadPolicy:
+            TableName:
+              !Ref AuthenticationTable
+        # This lambda needs write access to the auth table to add user tokens.
+        - DynamoDBWritePolicy:
+            TableName:
+              !Ref AuthenticationTable
 
   # Lambda Shared Code Layers. -------------------------------------------------
+  # Splitting these layers up reduces the amount that must be recompiled when
+  # one is modified, since only changed layers must be recompiled.
+
+  # Library written by us, usable by all lambdas.
   CommonLambdaLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      ContentUri: common/
+      ContentUri: source/common/
       Description: contains shared code for the lambdas.
       CompatibleRuntimes:
         - python3.8
+    Metadata:
+      BuildMethod: python3.8
 
-  # External pip dependency layer.
+  # External pip dependency layer, usable by all lambdas.
   DependencyLambdaLayer:
     Type: AWS::Serverless::LayerVersion
     Properties:
-      ContentUri: dependency/
+      ContentUri: source/dependency/
       Description: contains the external libraries.
       CompatibleRuntimes:
         - python3.8
+    Metadata:
+      BuildMethod: python3.8
 
-#Outputs:
-  #HelloWorldApi:
-  #  Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-  #  Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  #HelloWorldFunction:
-  #  Description: "Hello World Lambda Function ARN"
-  #  Value: !GetAtt HelloWorldFunction.Arn
+Outputs:
+  ClientWebsiteDomainSource:
+    Description: "The website domain of the client. Point a CNAME or Alias record from this to the CloudFrontWebsiteDnsName."
+    Value: !Ref WebsiteDomain
+  CloudFrontWebsiteDnsName:
+    Description: "The DNS name of the CDN. Point a CNAME or Alias record to it."
+    Value: !GetAtt WebsiteContentCloudFront.DomainName
+  CloudFrontWebsiteId:
+    Description: "The ID of the CloudFront distribution serving the website."
+    Value: !Ref WebsiteContentCloudFront
+  ServerApiDomainSource:
+    Description: "The api domain of the server. Point a CNAME or Alias record from this to the ServerApiDnsName."
+    Value: !Ref ApiDomain
+  ServerApiDnsName:
+    Description: "The DNS name of the API. Point a CNAME or Alias record to it."
+    Value: "Impossible to retrieve from template, please look at the domain name for the custom domain configuration in the API gateway console."

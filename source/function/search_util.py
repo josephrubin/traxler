@@ -1,6 +1,7 @@
+import json
+
 import boto3
 from boto3.dynamodb.conditions import Key, Attr
-import json
 
 
 def scan_as_fname(table, token):
@@ -15,7 +16,7 @@ def scan_as_lname(table, token):
 
 def query_as_netid(table, token):
     return table.query(
-                KeyConditionExpression=Key('_netId').eq(token)
+                KeyConditionExpression=Key('_netid').eq(token)
             )['Items']
 
 def query_as_fname(table, token):
@@ -67,7 +68,6 @@ def query_as_fname_and_lname(table, token_one, token_two):
     
     
 def fuzzy_in(string_one, string_two, thresh=4):
-    print('check', string_one, string_two)
     """Check if a good number of characters from string_one are in string_two in order."""
     threshold = min(len(string_one), thresh)
     match_count = 0

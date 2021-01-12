@@ -169,12 +169,12 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    fetch("https://api.nassau.network/students/" + urlParams.get('!'), {
+    fetch("https://" + apiDomain + "/students/" + urlParams.get('!'), {
       credentials: 'include'
     })
       .then(res => {
           if (res.status == 403) {
-            window.location.href = "https://nassau.network/login.html?ref=" + window.location.href;
+            window.location.href = "https://" + websiteDomain + "/login.html?ref=" + window.location.href;
             return;
           }
           return res.json()

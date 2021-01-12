@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+"""Populate the database with information from TigerFace.
+
+Ideally this would be run automatically from a lambda every two weeks or so,
+but the AWS VPN is not in the Princeton network so we can't access the API.
+"""
 
 import base64
 import hashlib
@@ -18,8 +23,6 @@ IMAGE_DIRECTORY_SMALL = 'prod/small'
 
 
 def _main():
-    os.environ['AWS_PROFILE'] = 'tongue'
-
     dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
     student_table = dynamodb.Table(os.environ['TX_DYNAMODB_STUDENT_TABLE'])
 
@@ -129,14 +132,14 @@ def _main():
             # Attributes that start with '_' will be used as indices.
             batch.put_item(
                 Item={
-                    '_netId': net_id.upper(),
+                    '_netid': net_id.upper(),
 
                     '_fname': fname.upper(),
                     '_lname': lname.upper(),
                     '_study': study.upper(),
                     '_college': college.upper(),
 
-                    'netId': net_id,
+                    'netid': net_id,
                     'name': name,
                     'year': year,
                     'study': study,
@@ -157,7 +160,7 @@ def _main():
             temporary_directory + '/prod',
             's3://{}/prod'.format(os.environ['TX_S3_IMAGE_BUCKET']),
             # Remove files from remote if they are not needed anymore.
-            "--delete",
+            '--delete',
             # Do not update the files on remote just because their timestamp
             # is newer on local. Instead base off filename and size.
             '--size-only'

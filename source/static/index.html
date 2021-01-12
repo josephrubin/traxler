@@ -3,13 +3,19 @@
     <head>
         <meta charset="utf-8"/>
         <title>Nassau Network | Princeton's voguish directory</title>
+
+        <!-- Metadata about the application. -->
         <meta name="application-name" content="Nassau Network">
+        <meta name="description" content="The face book for Princeton undergraduate students.">
 
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <link rel="shortcut icon" href="https://nassau.network/favicon-touch.png" />
-        <link rel="apple-touch-icon" href="https://nassau.network/favicon-touch.png" />
-        <link rel="icon" type="image/png" href="https://nassau.network/favicon.png">
+        <!-- App icons for browser, tablet, phone, etc. The order can be
+             important because apple/android won't always choose the right one
+             if these are not in the right order. -->
+        <link rel="shortcut icon" href="favicon-touch.png" />
+        <link rel="apple-touch-icon" href="favicon-touch.png" />
+        <link rel="icon" type="image/png" href="favicon.png" />
 
         <link rel="stylesheet" href="css/main.css" />
 
@@ -20,14 +26,37 @@
         <script crossorigin src="https://unpkg.com/react@16.13.1/umd/react.production.min.js"></script>
         <script crossorigin src="https://unpkg.com/react-dom@16.13.1/umd/react-dom.production.min.js"></script>
         
-        <!-- Babel will transpile JSX for us (among other things) client side. This is technically
-        a slow way to do it, but it frees us from the Node ecosystem. -->
+        <!-- Babel will transpile JSX for us (among other things) client side.
+             This is technically a slow way to do it, but it frees us from the
+             Node ecosystem. -->
         <script crossorigin src="https://unpkg.com/@babel/standalone@7.9.5/babel.min.js"></script>
     </head>
     <body>
         <div id="root"></div>
 
+        <script src="js/constants.js"></script>
         <!-- Use a babel type for client side transpilation. -->
         <script type="text/babel" src="js/index.js"></script>
+
+        <!-- The core Firebase JS SDK is always required and must be listed first -->
+        <script src="https://www.gstatic.com/firebasejs/8.2.2/firebase-app.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/8.2.2/firebase-analytics.js"></script>
+
+        <script>
+          // Your web app's Firebase configuration
+          // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+          var firebaseConfig = {
+            apiKey: "AIzaSyAYp58pnz581GZc6OZZHF6UFJ_lMsUQoyI",
+            authDomain: "traxler.firebaseapp.com",
+            projectId: "traxler",
+            storageBucket: "traxler.appspot.com",
+            messagingSenderId: "157193918803",
+            appId: "1:157193918803:web:46dc3f41dfb254ca6769a6",
+            measurementId: "G-75S252MXV7"
+          };
+          // Initialize Firebase
+          firebase.initializeApp(firebaseConfig);
+          firebase.analytics();
+        </script>
     </body>
 </html>

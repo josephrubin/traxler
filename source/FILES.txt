@@ -1,0 +1,4 @@
+common: A library of Python code to use in the lambdas.
+dependancy: Pip installed dependancies used in the lambdas.
+function: The source for the server-side Python lambdas.
+static: The static web pages and web resources that power the website front end.

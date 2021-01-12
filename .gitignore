@@ -14,5 +14,5 @@ wip/
 todo
 
 # AWS.
-.aws_profile
 .aws-sam/
+.AWS_PROFILE

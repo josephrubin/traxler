@@ -7,7 +7,7 @@ let continueOnwardUrlParam = urlParams.get('c');
 if (continueOnwardUrlParam === '1') {
   let continueUrlStorage = storage.getItem('ref') || '/';
   let ticketUrlParam = urlParams.get('ticket');
-  fetch('https://api.nassau.network/validate', {
+  fetch('https://' + apiDomain + '/validate', {
     method: 'POST',
     //cache: 'no-cache',
     credentials: 'include',
@@ -28,5 +28,5 @@ if (continueOnwardUrlParam === '1') {
 else {
   let continueUrlParam = urlParams.get('ref') || '/';
   storage.setItem('ref', continueUrlParam);
-  window.location.href = 'https://fed.princeton.edu/cas/login?service=' + encodeURIComponent('https://nassau.network/login.html?c=1')
+  window.location.href = 'https://fed.princeton.edu/cas/login?service=' + encodeURIComponent('https://' + websiteDomain + '/login.html?c=1')
 }
