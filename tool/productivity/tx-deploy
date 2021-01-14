@@ -43,8 +43,8 @@ echo_magenta Deploying website...
 
 cat << EOF > $STATIC_DIR/js/constants.js
 // This is a generated file. Don't touch.
-const websiteDomain='$website_domain'
-const apiDomain='$api_domain'
+const websiteUrl='https://$website_domain'
+const apiUrl='https://$api_domain'
 EOF
 
 # Copy the static files over to the S3 bucket, deleting any remote files that

@@ -128,19 +128,19 @@ class App extends React.Component {
   }
 
   fetchFast(q) {
-    fetch("https://" + apiDomain + "/search/?count=0&start=0&fast=1&q=" + q, {
+    fetch(apiUrl + "/search/?count=0&start=0&fast=1&q=" + q, {
       credentials: 'include'
     })
       .then(res => {
           if (res.status == 403) {
-            window.location.href = "https://" + websiteDomain + "/login.html?ref=" + window.location.href;
+            window.location.href = websiteUrl + "/login.html?ref=" + window.location.href;
             return;
           }
           return res.json()
       })
       .then(res => {
           if (res.status == 403) {
-            window.location.href = "https://" + websiteDomain + "/login.html?ref=" + window.location.href;
+            window.location.href = websiteUrl + "/login.html?ref=" + window.location.href;
           }
 
           // If we somehow finished after the slow request, do nothing. The DOM is already populated.
@@ -168,12 +168,12 @@ class App extends React.Component {
   }
 
   fetchSlow(q) {
-    fetch("https://" + apiDomain + "/search/?count=0&start=0&fast=0&q=" + q, {
+    fetch(apiUrl + "/search/?count=0&start=0&fast=0&q=" + q, {
       credentials: 'include'
     })
     .then(res => {
         if (res.status == 403) {
-          window.location.href = "https://" + websiteDomain + "/login.html?ref=" + window.location.href;
+          window.location.href = websiteUrl + "/login.html?ref=" + window.location.href;
           return;
         }
         return res.json()
@@ -207,16 +207,16 @@ class App extends React.Component {
     let results = this.state.students.map(function(student, idx) {
       var color = "#ffffff"
       switch (Number(student.year)) {
-        case 21:
+        case 2021:
           color = "#fffef0"
           break;
-        case 22:
+        case 2022:
           color = "#dbe9ff"
           break;
-        case 23:
+        case 2023:
           color = "#ffeded"
           break;
-        case 24:
+        case 2024:
           color = "#d4ffe4"
           break;
       }
@@ -231,11 +231,11 @@ class App extends React.Component {
       }
 
       return (
-        <div key={student.netId} className={extraClasses}>
+        <div key={student.netid} className={extraClasses}>
           <SearchResult extraClasses={extraClasses} color={color} click={"student.html?!=" + student.netId}>
             <div className={"peacemaker search_page"}>
-              <h1 className="search_page">{student.name}<span style={{color: "#C7C7C7"}}> '{student.year}</span></h1>
-              <Portrait src={"/small/" + student.image} />
+              <h1 className="search_page">{student.name}<span style={{color: "#C7C7C7"}}> '{student.year.slice(-2)}</span></h1>
+              <Portrait src={student.photo_small} />
             </div>
             <h2 className="search_page">{(student.study == "Computer Science" ? student.degree + " " : "") + student.study}</h2>
           </SearchResult>

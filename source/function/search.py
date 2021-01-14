@@ -8,12 +8,12 @@ from boto3.dynamodb.conditions import Key, Attr
 from http.cookies import SimpleCookie
 
 import authentication
-import reponse
-import util as lib
+import response
+import search_util as lib
 
 
 _DYNAMODB = boto3.resource('dynamodb')
-_STUDENT_TABLE = dynamodb.Table(os.environ['STUDENT_INFORMATION_TABLE'])
+_STUDENT_TABLE = _DYNAMODB.Table(os.environ['STUDENT_INFORMATION_TABLE'])
 
 # Common mispellings that allow us to search for intended results.
 _REPLACEMENTS = {
@@ -36,7 +36,7 @@ _REPLACEMENTS = {
 
 def lambda_handler(event, context):
     # Authentication check before we do anything else.
-    if not authentication.validate(event['headers']['cookie']):
+    if not authentication.validate(event):
         return response.forbidden()
 
     # Get the supplied parameters.
@@ -74,13 +74,13 @@ def lambda_handler(event, context):
     if len(tokens) == 1:
         token = tokens[0]
         
-        items = lib.query_as_netid(student_table, token)
+        items = lib.query_as_netid(_STUDENT_TABLE, token)
         results.extend(items)
         
-        items = lib.query_as_fname(student_table, token)
+        items = lib.query_as_fname(_STUDENT_TABLE, token)
         results.extend(items)
         
-        items = lib.query_as_lname(student_table, token)
+        items = lib.query_as_lname(_STUDENT_TABLE, token)
         results.extend(items)
         
         if not fast:
@@ -90,37 +90,37 @@ def lambda_handler(event, context):
                         for _c in _REPLACEMENTS[c]:
                             _token = token[:i] + _c + token[i+1:]
                         
-                            items = lib.query_as_fname(student_table, _token)
+                            items = lib.query_as_fname(_STUDENT_TABLE, _token)
                             results.extend(items)
                             
-                            items = lib.query_as_lname(student_table, _token)
+                            items = lib.query_as_lname(_STUDENT_TABLE, _token)
                             results.extend(items)
         """
         # Scan operations are too slow.
         if not fast:
-            items = lib.scan_as_fname(student_table, token)
+            items = lib.scan_as_fname(_STUDENT_TABLE, token)
             results.extend(items)
             
-            items = lib.scan_as_lname(student_table, token)
+            items = lib.scan_as_lname(_STUDENT_TABLE, token)
             results.extend(items)
         """
             
     else:
         for token_one, token_two in itertools.combinations(tokens, 2):
-            items = lib.query_as_fname_and_lname(student_table, token_one, token_two)
+            items = lib.query_as_fname_and_lname(_STUDENT_TABLE, token_one, token_two)
             results.extend(items)
             
         if not fast:
             for token in tokens:
-                items = lib.query_as_netid(student_table, token)
+                items = lib.query_as_netid(_STUDENT_TABLE, token)
                 results.extend(items)
             
             for token in tokens:
-                items = lib.query_as_fname(student_table, token)
+                items = lib.query_as_fname(_STUDENT_TABLE, token)
                 results.extend(items)
             
             for token in tokens:
-                items = lib.query_as_lname(student_table, token)
+                items = lib.query_as_lname(_STUDENT_TABLE, token)
                 results.extend(items)
         
     # Deduplicate the results and remove all properties that start with

@@ -21,19 +21,19 @@ def query_as_netid(table, token):
 
 def query_as_fname(table, token):
     return table.query(
-                IndexName='_fname-index',
+                IndexName='_fname-_lname-index',
                 KeyConditionExpression=Key('_fname').eq(token)
             )['Items']
 
 def query_as_lname(table, token):
     return table.query(
-                IndexName='_lname-index',
+                IndexName='_lname-_fname-index',
                 KeyConditionExpression=Key('_lname').eq(token)
             )['Items']
             
 def query_as_fname_and_lname(table, token_one, token_two):
     part_one = [res for res in table.query(
-                IndexName='_fname-index',
+                IndexName='_fname-_lname-index',
                 KeyConditionExpression=Key('_fname').eq(token_one)
             )['Items']
                 #if token_two in res['_lname']
@@ -41,7 +41,7 @@ def query_as_fname_and_lname(table, token_one, token_two):
             ]
             
     part_two = [res for res in table.query(
-                IndexName='_lname-index',
+                IndexName='_lname-_fname-index',
                 KeyConditionExpression=Key('_lname').eq(token_one)
             )['Items']
                 #if token_two in res['_fname']
@@ -49,7 +49,7 @@ def query_as_fname_and_lname(table, token_one, token_two):
             ]
             
     part_three = [res for res in table.query(
-                IndexName='_fname-index',
+                IndexName='_fname-_lname-index',
                 KeyConditionExpression=Key('_fname').eq(token_two)
             )['Items']
                 #if token_one in res['_lname']
@@ -57,7 +57,7 @@ def query_as_fname_and_lname(table, token_one, token_two):
             ]
             
     part_four = [res for res in table.query(
-                IndexName='_lname-index',
+                IndexName='_lname-_fname-index',
                 KeyConditionExpression=Key('_lname').eq(token_two)
             )['Items']
                 #if token_one in res['_fname']

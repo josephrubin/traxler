@@ -8,6 +8,8 @@ import urllib.request
 
 import boto3
 
+import response
+
 
 _DYNAMODB = boto3.resource('dynamodb')
 _AUTHENTICATION_TABLE = _DYNAMODB.Table(os.environ['AUTHENTICATION_TABLE'])
@@ -40,25 +42,28 @@ _AUTH_DURATION = 60 * 60 * 24 * 7
 
 def lambda_handler(event, context):
     headers = event['headers']
-    ticket = headers['x-cas-ticket']
-    
+    ticket = headers['X-Cas-Ticket']
+
     # Make a request to validate the CAS ticket.
     validation_response = urllib.request.urlopen(
         _CAS_VALIDATION_URL.format(
             ticket,
-            os.environ['WEBSITE_DOMAIN']
+            '{}://{}'.format(
+                'http' if 'localhost' in os.environ['WEBSITE_DOMAIN'] else 'https',
+                os.environ['WEBSITE_DOMAIN']
+            )
         )
     )
     validation_text = validation_response.read().decode('ascii')
     
     # Check if the validation was successful.
-    if 'authenticationSuccess' not in text:
-        return response.ok(
+    if 'authenticationSuccess' not in validation_text:
+        return response.okay(
             json.dumps({"message": "Could not verify."}),
         )
     
     # There was an authentication success, so find the netid that logged in.
-    netid = NETID_PATTERN.search(text).group(1)
+    netid = NETID_PATTERN.search(validation_text).group(1)
     
     # We want to use the same ticket for many devices under the same user so
     # we can track uses in one place.
@@ -77,17 +82,7 @@ def lambda_handler(event, context):
             ticket = authentication_record['ticket']
             time_left = expires - int(time.time())
             
-            return response.okay(
-                json.dumps({"message": "Could verify."}),
-                headers = {
-                    # Add headers to set cookies on the user's browser. Using
-                    # different capitalization allows us to set two cookies.
-                    # Don't bother storing these cookies for longer than they will
-                    # be valid from the server's point of view.
-                    'Set-Cookie': 'ticket={}; Max-Age={}; Secure; HttpOnly'.format(ticket, time_left),
-                    'set-Cookie': 'netid={}; Max-Age={}; Secure; HttpOnly'.format(netid, time_left),
-                }
-            )
+            return okay_set_cookie(ticket, netid, time_left)
     else:
         uses = 0
 
@@ -103,6 +98,10 @@ def lambda_handler(event, context):
         }    
     )
     
+    return okay_set_cookie(ticket, netid, AUTH_DURATION)
+
+
+def okay_set_cookie(ticket, netid, duration):
     return response.okay(
         json.dumps({"message": "Could verify."}),
         headers = {
@@ -110,7 +109,7 @@ def lambda_handler(event, context):
             # different capitalization allows us to set two cookies.
             # Don't bother storing these cookies for longer than they will
             # be valid from the server's point of view.
-            'Set-Cookie': 'ticket={}; Max-Age={}; Secure; HttpOnly'.format(ticket, AUTH_DURATION),
-            'set-Cookie': 'netid={}; Max-Age={}; Secure; HttpOnly'.format(netid, AUTH_DURATION)
+            'Set-Cookie': 'ticket={}; Max-Age={}; Secure; HttpOnly'.format(ticket, duration),
+            'set-Cookie': 'netid={}; Max-Age={}; Secure; HttpOnly'.format(netid, duration)
         }
     )

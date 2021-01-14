@@ -1,5 +1,6 @@
 import os
 from http.cookies import SimpleCookie
+import time
 
 import boto3
 
@@ -24,13 +25,30 @@ def get_authentication_record(netid):
     return authentication_response_raw['Item']
 
 
-def validate(user_cookie):
+def validate(event):
     """Validate the credentials of the user, given their cookie.
 
     Returns true if the user is validated, and false otherwise.
     """
+    # Localhost is not allowed to validate CAS tickets, meaning we'll have to
+    # skip the auth table check, as there will never be a stored valid ticket there.
+    # This is okay because locally deployed lambdas do not have access to the live
+    # database unless you have the AWS creds for whatever database you are pointing
+    # to on your local machine.
+    # Thus running this code locally will not allow you to access more data than
+    # you could have previously.
+    # Funnily enough, while localhost can't validate tickets, localhost is an
+    # approved login service, meaning the system will generate a CAS ticket for
+    # the login if we wanted, we just can't check it!
+    if 'localhost' in os.environ['WEBSITE_DOMAIN']:
+        return True
+
+    try:
+        user_cookie = event['headers']['cookie']
+    except KeyError:
+        return False
     if not user_cookie or not type(user_cookie) is str:
-        return false
+        return False
 
     # Load the user's cookie to inspect their credentials.
     cookie = SimpleCookie()
@@ -40,10 +58,10 @@ def validate(user_cookie):
         netid_cookie = cookie['netid'].value
         token_cookie = cookie['token'].value
     except KeyError:
-        return false
+        return False
 
     if not netid_cookie or not token_cookie:
-        return false
+        return False
 
     authentication_response = get_authentication_record(netid_cookie)
     if authentication_response                                        \
@@ -51,7 +69,7 @@ def validate(user_cookie):
         and authentication_response['token'] == token_cookie          \
         and authentication_response['expires'] > int(time.time()):
         # The user is correctly authenticated, their request is valid.
-        # Note that we also eed to check authorization when we let users update
+        # Note that we also need to check authorization when we let users update
         # their accounts.
 
         # Increment the number of uses this user has. Note that we don't track
@@ -62,6 +80,6 @@ def validate(user_cookie):
             UpdateExpression="set uses = uses + 1",
             ReturnValues="UPDATED_NEW"
         )
-        return true
+        return True
 
-    return false
+    return False

@@ -7,12 +7,12 @@ let continueOnwardUrlParam = urlParams.get('c');
 if (continueOnwardUrlParam === '1') {
   let continueUrlStorage = storage.getItem('ref') || '/';
   let ticketUrlParam = urlParams.get('ticket');
-  fetch('https://' + apiDomain + '/validate', {
+  fetch(apiUrl + '/validate', {
     method: 'POST',
     //cache: 'no-cache',
     credentials: 'include',
     headers: {
-      'X-Cas-Ticket': ticketUrlParam
+      'x-cas-ticket': ticketUrlParam
     }
   })
   .then(res => {
@@ -28,5 +28,5 @@ if (continueOnwardUrlParam === '1') {
 else {
   let continueUrlParam = urlParams.get('ref') || '/';
   storage.setItem('ref', continueUrlParam);
-  window.location.href = 'https://fed.princeton.edu/cas/login?service=' + encodeURIComponent('https://' + websiteDomain + '/login.html?c=1')
+  window.location.href = 'https://fed.princeton.edu/cas/login?service=' + encodeURIComponent(websiteUrl + '/login.html?c=1')
 }

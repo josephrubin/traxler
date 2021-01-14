@@ -48,6 +48,9 @@ export PATH="$PATH_DIR:$PATH"
 # Export the AWS resource names.
 export TX_S3_IMAGE_BUCKET TX_S3_WEBSITE_BUCKET TX_DYNAMODB_STUDENT_TABLE
 
+# Adding common python files to path.
+export PYTHONPATH="$ROOT/source/common:$ROOT/source/dependency:$ROOT/source/function:${PYTHONPATH}"
+
 # Setup. -----------------------------------------------------------------------
 
 # Source all of the scripts in the include directory.

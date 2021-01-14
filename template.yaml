@@ -25,7 +25,7 @@ Globals:
     Environment:
       Variables:
         WEBSITE_DOMAIN: !Ref WebsiteDomain
-        STUDENT_INFORMATION_TABLE: !Ref StudentInformationTable
+        STUDENT_INFORMATION_TABLE: !Ref StudentTableName
         AUTHENTICATION_TABLE: !Ref AuthenticationTable
 
 # These allow the user deploying the template to customize the deployment.
@@ -47,7 +47,7 @@ Parameters:
     Description: The ACM certificate ARN provisioned for WebsiteDomain and ApiDomain.
 
   # Set in the traxler setup script. Parameters are used to synchronize the
-  # client and server.
+  # client and server. Also set for local testing in bk-dev.
   # -----------------------------------------------------------------------
 
   ImageBucketName:
@@ -215,7 +215,7 @@ Resources:
           Projection:
             ProjectionType: ALL
         # Allow query by last name, subquery by first name.
-        - IndexName: _lname_-fname-index
+        - IndexName: _lname-_fname-index
           KeySchema:
             - AttributeName: _lname
               KeyType: HASH
@@ -334,6 +334,20 @@ Resources:
         - DynamoDBWritePolicy:
             TableName:
               !Ref AuthenticationTable
+
+  # Supports CORS preflight requests for the validate lambda.
+  PreflightValidateLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: preflight.lambda_handler
+      Runtime: python3.8
+      Events:
+        OptionsValidate:
+          Type: Api
+          Properties:
+            RestApiId: !Ref ServerApi
+            Path: /validate
+            Method: OPTIONS
 
   # Lambda Shared Code Layers. -------------------------------------------------
   # Splitting these layers up reduces the amount that must be recompiled when

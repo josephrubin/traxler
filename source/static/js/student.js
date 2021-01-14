@@ -169,12 +169,12 @@ class App extends React.Component {
   }
 
   componentDidMount() {
-    fetch("https://" + apiDomain + "/students/" + urlParams.get('!'), {
+    fetch(apiUrl + "/students/" + urlParams.get('!'), {
       credentials: 'include'
     })
       .then(res => {
           if (res.status == 403) {
-            window.location.href = "https://" + websiteDomain + "/login.html?ref=" + window.location.href;
+            window.location.href = websiteUrl + "/login.html?ref=" + window.location.href;
             return;
           }
           return res.json()
@@ -182,16 +182,16 @@ class App extends React.Component {
       .then(res => {
           var color = "#ffffff"
           switch (Number(res.student.year)) {
-            case 21:
+            case 2021:
               color = "#fffef0"
               break;
-            case 22:
+            case 2022:
               color = "#dbe9ff"
               break;
-            case 23:
+            case 2023:
               color = "#ffeded"
               break;
-            case 24:
+            case 2024:
               color = "#d4ffe4"
               break;
           }
@@ -235,7 +235,7 @@ class App extends React.Component {
     var header = (
       <div className="peacemaker student_page">
         {backBubble}
-        <SearchBar fill={this.state.student.netId} />
+        <SearchBar fill={this.state.student.netid} />
         <ShareBubble name={this.state.student.name} src="icon/share.png" xtra="fr" />
         <ShareMenu name={this.state.student.name} />
       </div>
@@ -260,7 +260,7 @@ class App extends React.Component {
       else {
         body = (
           <>
-            <Portrait src={"/large/" + this.state.student.image} />
+            <Portrait src={this.state.student.photo_large} />
 
             <div className="student_page spacer_one"></div>
 
@@ -268,7 +268,7 @@ class App extends React.Component {
             <h2 className="student_page">{this.state.student.study + ", " + this.state.student.degree + " " + this.state.student.year}</h2>
 
             <div className="inbar_group student_page">
-              <InbarLink src="icon/mail.png" text={this.state.student.netId + "@princeton.edu"} />
+              <InbarLink src="icon/mail.png" text={this.state.student.netid + "@princeton.edu"} />
               <Inbar src="icon/place.png" text={this.state.student.college} />
             </div>
             <input id="clip" className="clip" />

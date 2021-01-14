@@ -9,6 +9,7 @@ import base64
 import hashlib
 import io
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -35,7 +36,7 @@ def _main():
     # we can use the production endpoint which does not require a VPN.
     students = None
     try:
-        with open('tiger_face_out.json', 'r') as data:
+        with open('{}/tiger_face_out.json'.format(os.environ['ROOT']), 'r') as data:
             students = json.loads(data.read())
         print('Loaded {} students from the API.'.format(len(students)))
     except:
@@ -127,7 +128,7 @@ def _main():
                     IMAGE_DIRECTORY_SMALL,
                     'default'
                 )
-
+            
             # Put the student data into DynamoDB.
             # Attributes that start with '_' will be used as indices.
             batch.put_item(
@@ -165,6 +166,14 @@ def _main():
             # is newer on local. Instead base off filename and size.
             '--size-only'
         ])
+
+        # Copy the images to the static directory so we can serve them
+        # locally. When we have a populate dev script, we'll do this without
+        # syncing to S3 above.
+        shutil.copytree(
+            temporary_directory + '/prod',
+            "{}/source/static/prod".format(os.environ['ROOT'])
+        )
 
     print(' skipped {} students with no name'.format(student_no_name_count))
     print(' kept {} students with no photo'.format(student_no_photo_count))

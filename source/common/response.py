@@ -3,7 +3,10 @@ import os
 
 _CORS_HEADERS = {
     # Allow the domain hosting the site to make requests to this API.
-    'Access-Control-Allow-Origin': 'https://{}'.format(os.environ['WEBSITE_DOMAIN']),
+    'Access-Control-Allow-Origin': '{}://{}'.format(
+        'http' if 'localhost' in os.environ['WEBSITE_DOMAIN'] else 'https',
+        os.environ['WEBSITE_DOMAIN']
+    ),
     'Access-Control-Allow-Methods': 'GET,POST',
     # Allow the cas ticket header for authentication.
     'Access-Control-Allow-Headers': 'x-cas-ticket',
@@ -17,7 +20,7 @@ def okay(body, *, headers={}):
     return {
         'statusCode': 200,
         'headers': {**_CORS_HEADERS, **headers},
-        'body': 'body'
+        'body': body
     }
 
 

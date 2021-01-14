@@ -1,8 +1,35 @@
 #!/bin/bash
 
-# Serve the website locally.
+# Serve traxler locally.
 _main() {
-    (cd $STATIC_DIR && python3 -m http.server)
+    for script in $TOOL_DIR/include/*.sh; do
+        source $script;
+    done
+
+    # Kill both processes on CTRL-C.
+    trap 'kill $client; echo; echo_red Traxler stopped; exit' INT
+
+    # Set up the project for local development.
+    cat << EOF > $STATIC_DIR/js/constants.js
+    // This is a generated file. Don't touch.
+    const websiteUrl='http://localhost:8000'
+    const apiUrl='http://localhost:3000'
+EOF
+
+    echo_magenta Starting traxler...
+
+    # Start the client.
+    python3 -m http.server --directory $STATIC_DIR &
+    client=$!
+
+    # Start the server.
+    sam local start-api \
+        --parameter-overrides \
+        WebsiteDomain=localhost:8000 \
+        ApiDomain=localhost:3000 \
+        ImageBucketName=$TX_S3_IMAGE_BUCKET \
+        WebsiteBucketName=$TX_S3_WEBSITE_BUCKET \
+        StudentTableName=$TX_DYNAMODB_STUDENT_TABLE
 }
 
 _main
